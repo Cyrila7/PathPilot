@@ -1,4 +1,4 @@
-echo "# PathPilot
+ "# PathPilot
 
 AI-powered career readiness platform for college students.
 
