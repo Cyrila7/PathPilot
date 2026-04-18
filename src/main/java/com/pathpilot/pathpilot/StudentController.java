@@ -9,7 +9,11 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/students")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
+@CrossOrigin(origins = {
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://path-pilot-rho.vercel.app"
+})
 public class StudentController {
 
     private final StudentRepository studentRepository;

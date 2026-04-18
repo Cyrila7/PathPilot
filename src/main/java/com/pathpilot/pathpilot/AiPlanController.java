@@ -7,7 +7,11 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/students")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173", "https://path-pilot-jl6rh9agp-cyrils-projects-65843490.vercel.app"})
+@CrossOrigin(origins = {
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://path-pilot-rho.vercel.app"
+})
 public class AiPlanController {
     private final StudentRepository studentRepository;
     private final String API_KEY = System.getenv("ANTHROPIC_API_KEY");
