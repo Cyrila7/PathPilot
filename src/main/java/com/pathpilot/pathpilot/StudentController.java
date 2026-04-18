@@ -2,14 +2,14 @@ package com.pathpilot.pathpilot;
 
 import org.springframework.web.bind.annotation.*;
 
-import ch.qos.logback.core.joran.action.Action;
-
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
+
+
 @RestController
 @RequestMapping("/students")
+@CrossOrigin(origins = "http://localhost:3000")
 public class StudentController {
 
     private final StudentRepository studentRepository;
