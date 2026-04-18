@@ -55,6 +55,8 @@ public class AiPlanController {
     }
 
     private String buildPrompt(Student student) {
+        String today = java.time.LocalDate.now().toString();
+
         return String.format("""
             You are PathPilot, an honest career advisor for college students. No sugarcoating.
             
