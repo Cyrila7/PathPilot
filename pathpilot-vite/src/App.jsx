@@ -15,13 +15,13 @@ function App() {
 
   async function handleAiPlan() {
     setLoading(true);
-    const studentRes = await fetch("http://localhost:8080/students", {
+    const studentRes = await fetch("https://pathpilot-production-de7c.up.railway.app/students", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form)
     });
     const student = await studentRes.json();
-    const planRes = await fetch(`http://localhost:8080/students/${student.id}/ai-plan`, {
+    const planRes = await fetch(`https://pathpilot-production-de7c.up.railway.app/students/${student.id}/ai-plan`, {
       method: "POST"
     });
     const planText = await planRes.text();
