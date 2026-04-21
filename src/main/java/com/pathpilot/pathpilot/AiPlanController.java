@@ -1,8 +1,8 @@
 package com.pathpilot.pathpilot;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 import java.util.*;
 
 @RestController
@@ -13,53 +13,60 @@ import java.util.*;
     "https://path-pilot-rho.vercel.app"
 })
 public class AiPlanController {
-    private final StudentRepository studentRepository;
-    private final String API_KEY = System.getenv("ANTHROPIC_API_KEY");
 
+    // repository to fetch students from database
+    private final StudentRepository studentRepository;
+
+    // WebClient is our tool for making HTTP requests to external APIs
+    private final WebClient webClient;
+
+    // API key loaded from environment variable — never hardcode this
+    @Value("${anthropic.api.key}")
+    private String API_KEY;
+
+    // constructor — Spring injects the repository, we create the WebClient once
     public AiPlanController(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
+        this.webClient = WebClient.create();
     }
 
     @PostMapping("/{id}/ai-plan")
     public String generateAiPlan(@PathVariable Long id) {
+
+        // Step 1 — find student in database by id
         Student student = studentRepository.findById(id).orElse(null);
-        if(student == null) return "Student not found";
+        if (student == null) return "Student not found";
 
-
+        // Step 2 — build the prompt from student's real data
         String prompt = buildPrompt(student);
 
-        // BUILD REQUEST BODY
+        // Step 3 — build the request body Anthropic expects
         Map<String, Object> body = new HashMap<>();
         body.put("model", "claude-opus-4-5");
         body.put("max_tokens", 1024);
-        body.put("messages", List.of(Map.of("role", "user", "content", prompt)
-        ));
+        body.put("messages", List.of(Map.of("role", "user", "content", prompt)));
 
-        // send request to Anthropic API
-        RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("x-api-key", API_KEY);
-        headers.set("anthropic-version", "2023-06-01");
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        ResponseEntity<Map> response = restTemplate.postForEntity(
-            "https://api.anthropic.com/v1/messages",
-            request,
-            Map.class
-        );
-        
-        // Extract text from response
-        List<Map> content = (List<Map>) response.getBody().get("content");
-        return content.get(0).get("text").toString();
+        // Step 4 — send request to Anthropic API using WebClient
+        return webClient
+            .post()                                              // POST request
+            .uri("https://api.anthropic.com/v1/messages")       // Anthropic endpoint
+            .header("x-api-key", API_KEY)                       // auth
+            .header("anthropic-version", "2023-06-01")          // API version
+            .header("content-type", "application/json")         // sending JSON
+            .bodyValue(body)                                     // attach the body
+            .retrieve()                                          // send it
+            .bodyToMono(String.class)                            // read response as String
+            .block();                                            // wait for response
     }
 
+    // builds a personalized prompt from the student's profile
     private String buildPrompt(Student student) {
         String today = java.time.LocalDate.now().toString();
 
         return String.format("""
             You are PathPilot, an honest career advisor for college students. No sugarcoating.
-            
+            Today's date is %s.
+
             Student Profile:
             - Name: %s
             - Major: %s
@@ -69,7 +76,7 @@ public class AiPlanController {
             - Target Role: %s at %s
             - Current Skills: %s
             - Skill Gaps: %s
-            
+
             Generate a brutally honest, personalized action plan. Be specific. Be direct.
             Format it as:
             1. Overall Assessment
@@ -77,6 +84,7 @@ public class AiPlanController {
             3. Skills to Learn First
             4. Timeline to first internship
             """,
+            today,
             student.getName(),
             student.getMajor(),
             student.getSchool(),
