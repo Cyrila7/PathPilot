@@ -1,6 +1,8 @@
 package com.pathpilot.pathpilot;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,16 +28,20 @@ public class Student {
     @Embedded
     private SkillProfile skillProfile;
 
+    @Enumerated(EnumType.STRING)
+    private  GradeLevel gradeLevel;
+
     // JPA requires this
     public Student() {}
     
 
-    public Student(String name, String email, String major, String school, double gpa) {
+    public Student(String name, String email, String major, String school, double gpa, GradeLevel gradeLevel) {
         this.name = name;
         this.email = email;
         this.major = major;
         this.school = school;
         this.gpa = gpa;
+        this.gradeLevel = gradeLevel;
         this.careerGoal = new CareerGoal("Software Engineer", "Google", "2024-06-01");
         this.skillProfile = new SkillProfile("Intermediate");
     }
@@ -46,6 +52,7 @@ public class Student {
     public String getMajor() { return major; }
     public String getSchool() { return school; }
     public double getGpa() { return gpa; }
+    public GradeLevel getGradeLevel() { return gradeLevel; }
     public CareerGoal getCareerGoal() { return careerGoal; }
     public SkillProfile getSkillProfile() { return skillProfile; }
 
@@ -62,8 +69,9 @@ public class Student {
     public void setGpa(double gpa) { this.gpa = gpa; }
     public void setCareerGoal(CareerGoal careerGoal) { this.careerGoal = careerGoal; }
     public void setSkillProfile(SkillProfile skillProfile) { this.skillProfile = skillProfile; }
-    
-       /* @Override
+    public void setGradeLevel(GradeLevel gradeLevel) { this.gradeLevel = gradeLevel; }
+
+        @Override
         public String toString() {
             return "Student{" +
                     "id=" + id +
@@ -74,7 +82,8 @@ public class Student {
                     ", gpa=" + gpa +
                     ", careerGoal=" + careerGoal +
                     ", skillProfile=" + skillProfile +
+                    ", gradeLevel=" + gradeLevel +
                     '}';
         }
-                    */
+                    
 }

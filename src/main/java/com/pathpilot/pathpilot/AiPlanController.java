@@ -70,30 +70,42 @@ public class AiPlanController {
         String today = java.time.LocalDate.now().toString();
 
         return String.format("""
-            You are PathPilot, an honest career advisor for college students. No sugarcoating.
+            You are PathPilot, a brutally honest career advisor for college students. No sugarcoating. No generic advice. Be direct, specific, and practical.
+
             Today's date is %s.
 
             Student Profile:
             - Name: %s
             - Major: %s
             - School: %s
+            - Grade: %s
             - GPA: %.2f
             - Status: %s
             - Target Role: %s at %s
             - Current Skills: %s
             - Skill Gaps: %s
 
-            Generate a brutally honest, personalized action plan. Be specific. Be direct.
+            Important instruction:
+            The student's grade determines their runway (time left before internships/full-time recruiting).
+            - Freshman/Sophomore = long runway → prioritize exploration, fundamentals, and compounding skills.
+            - Junior = limited runway → prioritize internships, recruiting readiness, and fast skill acquisition.
+            - Senior = almost no runway → prioritize immediate employability, aggressive applications, and backup plans.
+
+            Adjust urgency, tone, and priorities accordingly. Be harsher and more urgent when runway is short.
+
+            Generate a brutally honest, personalized action plan.
+
             Format it as:
-            1. Overall Assessment
-            2. Top 3 Priorities Right Now
-            3. Skills to Learn First
-            4. Timeline to first internship
+            1. Overall Assessment (clear, blunt evaluation of their situation)
+            2. Top 3 Priorities Right Now (high-impact, no fluff)
+            3. Skills to Learn First (ordered, practical, tied to target role)
+            4. Timeline to First Internship (realistic, based on their grade/runway — include weeks/months and what must happen when)
             """,
             today,
             student.getName(),
             student.getMajor(),
             student.getSchool(),
+            student.getGradeLevel(),
             student.getGpa(),
             student.getStatus(),
             student.getCareerGoal() != null ? student.getCareerGoal().getTargetRole() : "Not set",
