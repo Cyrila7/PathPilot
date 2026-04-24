@@ -7,8 +7,9 @@ function App() {
   });
   const [aiPlan, setAiPlan] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("token"));
   const [authForm, setAuthForm] = useState({ name: "", email: "", password: "" });
+  
 
   function handleChange(e) { setForm({ ...form, [e.target.name]: e.target.value }); }
 
