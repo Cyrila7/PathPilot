@@ -1,26 +1,32 @@
- "# PathPilot
+# PathPilot
 
 AI-powered career readiness platform for college students.
 
 ## What it does
-Takes a student's academic profile, GPA, career goal, and skill gaps and generates an honest, personalized action plan — no sugarcoating.
+Takes a student's DegreeWorks academic audit, GPA, career goal, and skills and generates a brutally honest, personalized 5-section career plan. No sugarcoating. Ever.
 
 ## Tech Stack
 - Java + Spring Boot (REST API)
-- PostgreSQL (persistence)
-- React + Tailwind (frontend — in progress)
+- PostgreSQL on Railway
+- React + Vite on Vercel
+- Claude AI via Anthropic API
+- JWT Authentication (Spring Security)
+
+## Features
+- Register/login with JWT auth
+- Paste DegreeWorks academic audit
+- Grade level aware (Freshman → Senior urgency)
+- AI generates: Assessment, Priorities, Skills, Timeline, Course Recommendations
 
 ## Endpoints
-- POST /students — create a student profile
-- GET /students — get all students
-- GET /students/{id} — get one student
-- PUT /students/{id} — update a student
-- DELETE /students/{id} — delete a student
-- POST /students/{id}/plan — generate a personalized action plan
+- POST /auth/register
+- POST /auth/login
+- POST /students
+- GET /students/{id}
+- POST /students/{id}/ai-plan
+
+## Live
+https://path-pilot-rho.vercel.app
 
 ## Built by
-Cyril — NYC College of Technology, Computer Science" > README.md
-
-git add README.md
-git commit -m "Add README"
-git push
+Cyril — NYC College of Technology, Computer Systems
