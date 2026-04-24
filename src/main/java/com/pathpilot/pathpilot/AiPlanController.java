@@ -43,7 +43,7 @@ public class AiPlanController {
         // Step 3 — build the request body Anthropic expects
         Map<String, Object> body = new HashMap<>();
         body.put("model", "claude-sonnet-4-5");
-        body.put("max_tokens", 2048);
+        body.put("max_tokens", 4096);
         body.put("messages", List.of(Map.of("role", "user", "content", prompt)));
 
         // Step 4 — send request to Anthropic API using WebClient
