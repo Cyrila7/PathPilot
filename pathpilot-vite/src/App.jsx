@@ -18,6 +18,7 @@ function App() {
       method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify(form)
     });
     const student = await studentRes.json();
+    console.log("student response:", student);
     const planRes = await fetch(`https://pathpilot-production-de7c.up.railway.app/students/${student.id}/ai-plan`, { method: "POST", headers: { "Authorization": `Bearer ${token}` }});
     const planText = await planRes.text();
     setAiPlan(planText);
