@@ -51,6 +51,8 @@ public class StudentController {
             student.setMajor(updatedStudent.getMajor());
             student.setSchool(updatedStudent.getSchool());
             student.setGpa(updatedStudent.getGpa());
+            student.setDegreeWorksText(updatedStudent.getDegreeWorksText());
+            student.setGradeLevel(updatedStudent.getGradeLevel());
             return studentRepository.save(student);
         })
         .orElse(null);
