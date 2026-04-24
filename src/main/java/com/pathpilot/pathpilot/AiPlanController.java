@@ -42,8 +42,8 @@ public class AiPlanController {
 
         // Step 3 — build the request body Anthropic expects
         Map<String, Object> body = new HashMap<>();
-        body.put("model", "claude-opus-4-5");
-        body.put("max_tokens", 1024);
+        body.put("model", "claude-sonnet-4-20250514");
+        body.put("max_tokens", 2048);
         body.put("messages", List.of(Map.of("role", "user", "content", prompt)));
 
         // Step 4 — send request to Anthropic API using WebClient
@@ -101,6 +101,7 @@ public class AiPlanController {
             2. Top 3 Priorities Right Now (high-impact, no fluff)
             3. Skills to Learn First (ordered, practical, tied to target role)
             4. Timeline to First Internship (realistic, based on their grade/runway — include weeks/months and what must happen when)
+            5. Recommended Next Semester Courses (based on DegreeWorks gaps and career goal)
             """,
             today,
             student.getName(),
