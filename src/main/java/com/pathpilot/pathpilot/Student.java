@@ -6,6 +6,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 
 
@@ -21,6 +22,7 @@ public class Student {
     private String major;
     private String school;
     private double gpa;
+    @Column(columnDefinition = "TEXT")
     private String degreeWorksText;
 
     @Embedded
