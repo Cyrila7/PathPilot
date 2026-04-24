@@ -21,6 +21,7 @@ public class Student {
     private String major;
     private String school;
     private double gpa;
+    private String degreeWorksText;
 
     @Embedded
     private CareerGoal careerGoal;
@@ -35,13 +36,14 @@ public class Student {
     public Student() {}
     
 
-    public Student(String name, String email, String major, String school, double gpa, GradeLevel gradeLevel) {
+    public Student(String name, String email, String major, String school, double gpa, GradeLevel gradeLevel, String degreeWorksText) {
         this.name = name;
         this.email = email;
         this.major = major;
         this.school = school;
         this.gpa = gpa;
         this.gradeLevel = gradeLevel;
+        this.degreeWorksText = degreeWorksText;
         this.careerGoal = new CareerGoal("Software Engineer", "Google", "2024-06-01");
         this.skillProfile = new SkillProfile("Intermediate");
     }
@@ -52,6 +54,7 @@ public class Student {
     public String getMajor() { return major; }
     public String getSchool() { return school; }
     public double getGpa() { return gpa; }
+    public String getDegreeWorksText() { return degreeWorksText; }
     public GradeLevel getGradeLevel() { return gradeLevel; }
     public CareerGoal getCareerGoal() { return careerGoal; }
     public SkillProfile getSkillProfile() { return skillProfile; }
@@ -67,6 +70,7 @@ public class Student {
     public void setSchool(String school) { this.school = school; }
     public void setEmail(String email) { this.email = email; }
     public void setGpa(double gpa) { this.gpa = gpa; }
+    public void setDegreeWorksText(String degreeWorksText) { this.degreeWorksText = degreeWorksText; }
     public void setCareerGoal(CareerGoal careerGoal) { this.careerGoal = careerGoal; }
     public void setSkillProfile(SkillProfile skillProfile) { this.skillProfile = skillProfile; }
     public void setGradeLevel(GradeLevel gradeLevel) { this.gradeLevel = gradeLevel; }

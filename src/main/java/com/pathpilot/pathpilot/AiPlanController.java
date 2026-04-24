@@ -80,6 +80,7 @@ public class AiPlanController {
             - School: %s
             - Grade: %s
             - GPA: %.2f
+            - Degree Works Text: %s
             - Status: %s
             - Target Role: %s at %s
             - Current Skills: %s
@@ -107,6 +108,7 @@ public class AiPlanController {
             student.getSchool(),
             student.getGradeLevel(),
             student.getGpa(),
+            student.getDegreeWorksText(),
             student.getStatus(),
             student.getCareerGoal() != null ? student.getCareerGoal().getTargetRole() : "Not set",
             student.getCareerGoal() != null ? student.getCareerGoal().getTargetCompany() : "Not set",

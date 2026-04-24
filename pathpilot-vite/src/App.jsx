@@ -1,7 +1,7 @@
 import { useState } from "react";
 function App() {
   const [form, setForm] = useState({
-    name: "", email: "", major: "", school: "", gpa: "",
+    name: "", email: "", major: "", school: "", gpa: "", degreeWorksText: "",
     careerGoal: { targetRole: "", targetCompany: "", targetDate: "" },
     skillProfile: { skillLevel: "Beginner", currentSkills: "", skillGaps: "" }
   });
@@ -64,6 +64,7 @@ function App() {
             <input className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" name="major" placeholder="Major" onChange={handleChange} />
             <input className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" name="school" placeholder="School" onChange={handleChange} />
             <input className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" name="gpa" placeholder="GPA (e.g. 3.7)" onChange={handleChange} />
+            <textarea className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" name="degreeWorksText" placeholder="Paste your DegreeWorks audit here..." rows={6}onChange={handleChange}/>
             <select className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500" name="gradeLevel" onChange={handleChange}>
               <option value="FRESHMAN">Freshman</option>
               <option value="SOPHOMORE">Sophomore</option>
