@@ -1,4 +1,4 @@
-package com.pathpilot.pathpilot;
+package com.pathpilot.pathpilot.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;

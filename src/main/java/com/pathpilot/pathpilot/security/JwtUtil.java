@@ -1,4 +1,4 @@
-package com.pathpilot.pathpilot;
+package com.pathpilot.pathpilot.security;
 
 import java.util.Date;
 

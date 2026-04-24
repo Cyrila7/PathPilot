@@ -1,4 +1,4 @@
-package com.pathpilot.pathpilot;
+package com.pathpilot.pathpilot.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

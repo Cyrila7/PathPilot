@@ -1,8 +1,12 @@
-package com.pathpilot.pathpilot;
+package com.pathpilot.pathpilot.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.pathpilot.pathpilot.model.Student;
+import com.pathpilot.pathpilot.repository.StudentRepository;
+
 import java.util.*;
 
 @RestController

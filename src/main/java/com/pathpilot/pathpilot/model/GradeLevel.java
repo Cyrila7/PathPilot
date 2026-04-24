@@ -1,4 +1,4 @@
-package com.pathpilot.pathpilot;
+package com.pathpilot.pathpilot.model;
 
 public enum GradeLevel {
     FRESHMAN,

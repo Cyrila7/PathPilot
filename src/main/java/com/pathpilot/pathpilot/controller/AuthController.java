@@ -1,4 +1,4 @@
-package com.pathpilot.pathpilot;
+package com.pathpilot.pathpilot.controller;
 
 
 import java.util.Optional;
@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.pathpilot.pathpilot.model.User;
+import com.pathpilot.pathpilot.repository.UserRepository;
+import com.pathpilot.pathpilot.security.JwtUtil;
 
 @CrossOrigin(origins = {
     "http://localhost:3000",

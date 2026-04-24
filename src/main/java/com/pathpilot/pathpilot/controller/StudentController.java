@@ -1,6 +1,10 @@
-package com.pathpilot.pathpilot;
+package com.pathpilot.pathpilot.controller;
 
 import org.springframework.web.bind.annotation.*;
+
+import com.pathpilot.pathpilot.model.ActionPlan;
+import com.pathpilot.pathpilot.model.Student;
+import com.pathpilot.pathpilot.repository.StudentRepository;
 
 import java.util.List;
 import java.util.Optional;
