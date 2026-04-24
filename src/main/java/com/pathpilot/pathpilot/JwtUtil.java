@@ -9,7 +9,7 @@ import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
-    private String secret = "mySecretKey";
+    private String secret = "pathpilot-super-secret-key-2024-secure";
     
     public String generateToken(String email) {
     return
