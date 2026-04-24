@@ -15,10 +15,10 @@ function App() {
   async function handleAiPlan() {
     setLoading(true);
     const studentRes = await fetch("https://pathpilot-production-de7c.up.railway.app/students", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form)
+      method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }, body: JSON.stringify(form)
     });
     const student = await studentRes.json();
-    const planRes = await fetch(`https://pathpilot-production-de7c.up.railway.app/students/${student.id}/ai-plan`, { method: "POST" });
+    const planRes = await fetch(`https://pathpilot-production-de7c.up.railway.app/students/${student.id}/ai-plan`, { method: "POST", headers: { "Authorization": `Bearer ${token}` }});
     const planText = await planRes.text();
     setAiPlan(planText);
     setLoading(false);
