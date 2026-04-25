@@ -3,18 +3,14 @@ package com.pathpilot.pathpilot.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import com.pathpilot.pathpilot.model.PlanHistory;
 import com.pathpilot.pathpilot.model.Student;
 import com.pathpilot.pathpilot.repository.PlanHistoryRepository;
 import com.pathpilot.pathpilot.repository.StudentRepository;
 import com.pathpilot.pathpilot.security.JwtUtil;
-
-
 
 @RestController
 @RequestMapping("/students")
@@ -72,7 +68,6 @@ public class AiPlanController {
         List<Map> content = (List<Map>) responseMap.get("content");
         String planText = content.get(0).get("text").toString();
 
-        // extract status from plan and save to history
         String status = "UNKNOWN";
         for (String line : planText.split("\n")) {
             if (line.trim().startsWith("STATUS:")) {
@@ -110,7 +105,6 @@ public class AiPlanController {
             - Grade: %s
             - GPA: %.2f
             - Degree Works Text: %s
-            - Status: %s
             - Target Role: %s at %s
             - Current Skills: %s
             - Skill Gaps: %s
@@ -152,7 +146,6 @@ public class AiPlanController {
             student.getGradeLevel(),
             student.getGpa(),
             student.getDegreeWorksText(),
-            student.getStatus(),
             student.getCareerGoal() != null ? student.getCareerGoal().getTargetRole() : "Not set",
             student.getCareerGoal() != null ? student.getCareerGoal().getTargetCompany() : "Not set",
             student.getSkillProfile() != null ? student.getSkillProfile().getCurrentSkills() : "Not set",
