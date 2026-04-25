@@ -116,6 +116,7 @@ function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
   const [error, setError] = useState("");
+  const [planHistory, setPlanHistory] = useState([]);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -156,6 +157,22 @@ function DashboardPage() {
     fetchProfile();
   }, []);
 
+  useEffect(() => {
+    async function fetchHistory() {
+      try {
+        const res = await fetch("https://pathpilot-production-de7c.up.railway.app/students/me/plans", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setPlanHistory(data);
+      } catch (err) {
+        console.log("No plan history found");
+      }
+    }
+    fetchHistory();
+  }, []);
+
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
@@ -185,6 +202,13 @@ function DashboardPage() {
 
       const planText = await planRes.text();
       setAiPlan(planText);
+
+      // refresh history after new plan generated
+      const histRes = await fetch("https://pathpilot-production-de7c.up.railway.app/students/me/plans", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (histRes.ok) setPlanHistory(await histRes.json());
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -300,6 +324,36 @@ function DashboardPage() {
                 </div>
               );
             })()}
+
+            {planHistory.length > 0 && (
+              <div className="mt-16">
+                <h2 className="text-xl font-bold text-white mb-4">Past Assessments</h2>
+                <div className="space-y-3">
+                  {planHistory.map((plan) => {
+                    const cfg = statusConfig[plan.status] || statusConfig["BEHIND"];
+                    const date = new Date(plan.createdAt).toLocaleDateString("en-US", {
+                      month: "short", day: "numeric", year: "numeric"
+                    });
+                    return (
+                      <AccordionSection key={plan.id} title={`${date} — ${plan.status}`}>
+                        <div className={`${cfg.bg} border ${cfg.border} rounded-xl px-4 py-3 mb-4 flex items-center gap-3`}>
+                          <span className="text-2xl">{cfg.icon}</span>
+                          <div>
+                            <p className={`font-bold text-sm ${cfg.text}`}>{cfg.label}</p>
+                            <p className="text-gray-400 text-xs mt-0.5">{cfg.sub}</p>
+                          </div>
+                        </div>
+                        {parseSections(plan.planText).map((section, j) => (
+                          <AccordionSection key={j} title={section.title}>
+                            {renderLines(section.lines)}
+                          </AccordionSection>
+                        ))}
+                      </AccordionSection>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
