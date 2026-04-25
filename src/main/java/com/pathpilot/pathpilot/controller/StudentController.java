@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import com.pathpilot.pathpilot.model.ActionPlan;
 import com.pathpilot.pathpilot.model.Student;
 import com.pathpilot.pathpilot.repository.StudentRepository;
+import com.pathpilot.pathpilot.security.JwtUtil;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,9 +23,12 @@ import java.util.Optional;
 public class StudentController {
 
     private final StudentRepository studentRepository;
+    private final JwtUtil jwtUtil;
 
-    public StudentController(StudentRepository studentRepository) {
+
+    public StudentController(StudentRepository studentRepository, JwtUtil jwtUtil) {
         this.studentRepository = studentRepository;
+        this.jwtUtil = jwtUtil;
     }
 
     @GetMapping
@@ -70,5 +75,13 @@ public class StudentController {
         plan.generate(student);
         return plan;
        
+    }
+    @GetMapping("/me")
+    public ResponseEntity<Student> getMyProfile(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String email = jwtUtil.extractIdentifier(token);
+        return studentRepository.findTopByEmailOrderByIdDesc(email)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
 }
