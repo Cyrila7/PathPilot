@@ -14,7 +14,7 @@ function RegisterPage() {
     });
 
     if (!res.ok) {
-      setError("Registration failed. Try a different email.");
+      setError("Registration failed. That email may already be registered.");
       return;
     }
 
