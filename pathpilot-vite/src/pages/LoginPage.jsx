@@ -19,6 +19,10 @@ function LoginPage() {
     }
 
     const token = await res.text();
+    if (!token || token === "Invalid credentials" || !token.startsWith("ey")) {
+      setError("Invalid email or password.");
+      return;
+    }
     localStorage.setItem("token", token);
     navigate("/dashboard");
   }

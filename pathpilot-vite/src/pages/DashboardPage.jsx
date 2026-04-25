@@ -186,13 +186,30 @@ function DashboardPage() {
     setLoading(true);
     setError("");
     try {
-      const studentRes = await fetch("https://pathpilot-production-de7c.up.railway.app/students", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify(form),
+      // check for existing student first — update if exists, create if not
+      let student;
+      const existingRes = await fetch("https://pathpilot-production-de7c.up.railway.app/students/me", {
+        headers: { "Authorization": `Bearer ${token}` }
       });
-      if (!studentRes.ok) throw new Error("Failed to save student profile.");
-      const student = await studentRes.json();
+
+      if (existingRes.ok) {
+        const existing = await existingRes.json();
+        const updateRes = await fetch(`https://pathpilot-production-de7c.up.railway.app/students/${existing.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify(form),
+        });
+        if (!updateRes.ok) throw new Error("Failed to update student profile.");
+        student = await updateRes.json();
+      } else {
+        const createRes = await fetch("https://pathpilot-production-de7c.up.railway.app/students", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify(form),
+        });
+        if (!createRes.ok) throw new Error("Failed to save student profile.");
+        student = await createRes.json();
+      }
 
       const planRes = await fetch(`https://pathpilot-production-de7c.up.railway.app/students/${student.id}/ai-plan`, {
         method: "POST",
