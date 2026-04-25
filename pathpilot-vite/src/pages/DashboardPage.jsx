@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function AccordionSection({ title, children }) {
@@ -94,6 +94,40 @@ function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const res = await fetch("https://pathpilot-production-de7c.up.railway.app/students/me", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const student = await res.json();
+        setForm({
+          name: student.name || "",
+          email: student.email || "",
+          major: student.major || "",
+          school: student.school || "",
+          gpa: student.gpa || "",
+          degreeWorksText: student.degreeWorksText || "",
+          gradeLevel: student.gradeLevel || "FRESHMAN",
+          careerGoal: {
+            targetRole: student.careerGoal?.targetRole || "",
+            targetCompany: student.careerGoal?.targetCompany || "",
+            targetDate: student.careerGoal?.targetDate || "",
+          },
+          skillProfile: {
+            skillLevel: student.skillProfile?.skillLevel || "Beginner",
+            currentSkills: student.skillProfile?.currentSkills || "",
+            skillGaps: student.skillProfile?.skillGaps || "",
+          }
+        });
+      } catch (err) {
+        console.log("No existing profile found");
+      }
+    }
+    fetchProfile();
+  }, []);
+
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
@@ -154,13 +188,13 @@ function DashboardPage() {
         {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
 
         <div className="space-y-3">
-          <input className={inputClass} name="name" placeholder="Full Name" onChange={handleChange} />
-          <input className={inputClass} name="email" placeholder="Email" onChange={handleChange} />
-          <input className={inputClass} name="major" placeholder="Major" onChange={handleChange} />
-          <input className={inputClass} name="school" placeholder="School" onChange={handleChange} />
-          <input className={inputClass} name="gpa" placeholder="GPA (e.g. 3.7)" onChange={handleChange} />
-          <textarea className={inputClass} name="degreeWorksText" placeholder="Paste your DegreeWorks audit here..." rows={6} onChange={handleChange} />
-          <select className={inputClass} name="gradeLevel" onChange={handleChange}>
+          <input className={inputClass} name="name" placeholder="Full Name" value={form.name} onChange={handleChange} />
+          <input className={inputClass} name="email" placeholder="Email" value={form.email} onChange={handleChange} />
+          <input className={inputClass} name="major" placeholder="Major" value={form.major} onChange={handleChange} />
+          <input className={inputClass} name="school" placeholder="School" value={form.school} onChange={handleChange} />
+          <input className={inputClass} name="gpa" placeholder="GPA (e.g. 3.7)" value={form.gpa} onChange={handleChange} />
+          <textarea className={inputClass} name="degreeWorksText" placeholder="Paste your DegreeWorks audit here..." rows={6} value={form.degreeWorksText} onChange={handleChange} />
+          <select className={inputClass} name="gradeLevel" value={form.gradeLevel} onChange={handleChange}>
             <option value="FRESHMAN">Freshman</option>
             <option value="SOPHOMORE">Sophomore</option>
             <option value="JUNIOR">Junior</option>
@@ -168,13 +202,13 @@ function DashboardPage() {
           </select>
 
           <p className="text-gray-400 text-sm pt-2">Career Goal</p>
-          <input className={inputClass} placeholder="Target Role (e.g. Software Engineer)" onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetRole: e.target.value } })} />
-          <input className={inputClass} placeholder="Target Company (e.g. Google)" onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetCompany: e.target.value } })} />
-          <input className={inputClass} placeholder="Target Date (e.g. 2027)" onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetDate: e.target.value } })} />
+          <input className={inputClass} placeholder="Target Role (e.g. Software Engineer)" value={form.careerGoal.targetRole} onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetRole: e.target.value } })} />
+          <input className={inputClass} placeholder="Target Company (e.g. Google)" value={form.careerGoal.targetCompany} onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetCompany: e.target.value } })} />
+          <input className={inputClass} placeholder="Target Date (e.g. 2027)" value={form.careerGoal.targetDate} onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetDate: e.target.value } })} />
 
           <p className="text-gray-400 text-sm pt-2">Skills</p>
-          <input className={inputClass} placeholder="Current Skills (e.g. Java, Spring Boot)" onChange={(e) => setForm({ ...form, skillProfile: { ...form.skillProfile, currentSkills: e.target.value } })} />
-          <input className={inputClass} placeholder="Skill Gaps (e.g. React, System Design)" onChange={(e) => setForm({ ...form, skillProfile: { ...form.skillProfile, skillGaps: e.target.value } })} />
+          <input className={inputClass} placeholder="Current Skills (e.g. Java, Spring Boot)" value={form.skillProfile.currentSkills} onChange={(e) => setForm({ ...form, skillProfile: { ...form.skillProfile, currentSkills: e.target.value } })} />
+          <input className={inputClass} placeholder="Skill Gaps (e.g. React, System Design)" value={form.skillProfile.skillGaps} onChange={(e) => setForm({ ...form, skillProfile: { ...form.skillProfile, skillGaps: e.target.value } })} />
 
           <button
             onClick={handleAiPlan}
