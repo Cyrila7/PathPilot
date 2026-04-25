@@ -1,6 +1,24 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+const LOADING_MESSAGES = [
+  "Analyzing your profile...",
+  "Reviewing your DegreeWorks...",
+  "Building your career roadmap...",
+  "Generating your plan...",
+];
+
+function LoadingText() {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex(i => (i + 1) % LOADING_MESSAGES.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+  return <span>{LOADING_MESSAGES[index]}</span>;
+}
+
 function AccordionSection({ title, children }) {
   const [open, setOpen] = useState(false);
   return (
@@ -60,11 +78,9 @@ function renderLines(lines) {
 function parseSections(text) {
   const sections = [];
   let current = null;
-
   text.split('\n').forEach(line => {
     const trimmed = line.trim();
     if (!trimmed || trimmed === '---') return;
-
     if (trimmed.startsWith('## ')) {
       if (current) sections.push(current);
       current = { title: trimmed.slice(3), lines: [] };
@@ -75,7 +91,6 @@ function parseSections(text) {
       current.lines.push(trimmed);
     }
   });
-
   if (current) sections.push(current);
   return sections;
 }
@@ -146,16 +161,13 @@ function DashboardPage() {
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify(form),
       });
-
       if (!studentRes.ok) throw new Error("Failed to save student profile.");
-
       const student = await studentRes.json();
 
       const planRes = await fetch(`https://pathpilot-production-de7c.up.railway.app/students/${student.id}/ai-plan`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}` },
       });
-
       if (!planRes.ok) throw new Error("Failed to generate AI plan.");
 
       const planText = await planRes.text();
@@ -213,9 +225,17 @@ function DashboardPage() {
           <button
             onClick={handleAiPlan}
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white font-semibold py-3 rounded-lg mt-2 transition-colors"
+            className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold py-3 rounded-lg mt-2 transition-colors flex items-center justify-center gap-2"
           >
-            {loading ? "Generating your plan..." : "Generate AI Plan"}
+            {loading ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                <LoadingText />
+              </>
+            ) : "Generate AI Plan"}
           </button>
 
           {aiPlan && (
