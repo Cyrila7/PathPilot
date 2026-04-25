@@ -75,12 +75,19 @@ function renderLines(lines) {
   });
 }
 
+function parseStatus(text) {
+  const line = text.split('\n').find(l => l.trim().startsWith('STATUS:'));
+  if (!line) return null;
+  return line.replace('STATUS:', '').trim();
+}
+
 function parseSections(text) {
   const sections = [];
   let current = null;
   text.split('\n').forEach(line => {
     const trimmed = line.trim();
     if (!trimmed || trimmed === '---') return;
+    if (trimmed.startsWith('STATUS:')) return;
     if (trimmed.startsWith('## ')) {
       if (current) sections.push(current);
       current = { title: trimmed.slice(3), lines: [] };
@@ -181,6 +188,24 @@ function DashboardPage() {
 
   const inputClass = "w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500";
 
+  const statusConfig = {
+    "BEHIND": {
+      bg: "bg-red-950", border: "border-red-700",
+      text: "text-red-400", icon: "⚠️", label: "BEHIND",
+      sub: "You have significant ground to cover. Urgency required."
+    },
+    "ON TRACK": {
+      bg: "bg-yellow-950", border: "border-yellow-700",
+      text: "text-yellow-400", icon: "📍", label: "ON TRACK",
+      sub: "You're moving in the right direction. Keep pushing."
+    },
+    "AHEAD": {
+      bg: "bg-green-950", border: "border-green-700",
+      text: "text-green-400", icon: "🚀", label: "AHEAD",
+      sub: "You're ahead of the curve. Don't slow down."
+    },
+  };
+
   return (
     <div className="min-h-screen bg-gray-950 text-white px-4 py-12">
       <div className="max-w-xl mx-auto">
@@ -238,16 +263,29 @@ function DashboardPage() {
             ) : "Generate AI Plan"}
           </button>
 
-          {aiPlan && (
-            <div className="mt-10 space-y-3">
-              <h2 className="text-xl font-bold text-white mb-4">Your Career Assessment</h2>
-              {parseSections(aiPlan).map((section, i) => (
-                <AccordionSection key={i} title={section.title}>
-                  {renderLines(section.lines)}
-                </AccordionSection>
-              ))}
-            </div>
-          )}
+          {aiPlan && (() => {
+            const status = parseStatus(aiPlan);
+            const cfg = statusConfig[status] || statusConfig["BEHIND"];
+            return (
+              <div className="mt-10 space-y-3">
+                <h2 className="text-xl font-bold text-white mb-4">Your Career Assessment</h2>
+                {status && (
+                  <div className={`${cfg.bg} border ${cfg.border} rounded-xl px-6 py-5 mb-6 flex items-center gap-4`}>
+                    <span className="text-3xl">{cfg.icon}</span>
+                    <div>
+                      <p className={`text-lg font-bold ${cfg.text}`}>{cfg.label}</p>
+                      <p className="text-gray-400 text-sm mt-0.5">{cfg.sub}</p>
+                    </div>
+                  </div>
+                )}
+                {parseSections(aiPlan).map((section, i) => (
+                  <AccordionSection key={i} title={section.title}>
+                    {renderLines(section.lines)}
+                  </AccordionSection>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
     </div>
