@@ -114,6 +114,7 @@ function DashboardPage() {
   });
   const [aiPlan, setAiPlan] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -122,7 +123,10 @@ function DashboardPage() {
         const res = await fetch("https://pathpilot-production-de7c.up.railway.app/students/me", {
           headers: { "Authorization": `Bearer ${token}` }
         });
-        if (!res.ok) return;
+        if (!res.ok) {
+          setProfileLoading(false);
+          return;
+        }
         const student = await res.json();
         setForm({
           name: student.name || "",
@@ -145,6 +149,8 @@ function DashboardPage() {
         });
       } catch (err) {
         console.log("No existing profile found");
+      } finally {
+        setProfileLoading(false);
       }
     }
     fetchProfile();
@@ -224,69 +230,78 @@ function DashboardPage() {
 
         {error && <p className="text-red-400 text-sm mb-4">{error}</p>}
 
-        <div className="space-y-3">
-          <input className={inputClass} name="name" placeholder="Full Name" value={form.name} onChange={handleChange} />
-          <input className={inputClass} name="email" placeholder="Email" value={form.email} onChange={handleChange} />
-          <input className={inputClass} name="major" placeholder="Major" value={form.major} onChange={handleChange} />
-          <input className={inputClass} name="school" placeholder="School" value={form.school} onChange={handleChange} />
-          <input className={inputClass} name="gpa" placeholder="GPA (e.g. 3.7)" value={form.gpa} onChange={handleChange} />
-          <textarea className={inputClass} name="degreeWorksText" placeholder="Paste your DegreeWorks audit here..." rows={6} value={form.degreeWorksText} onChange={handleChange} />
-          <select className={inputClass} name="gradeLevel" value={form.gradeLevel} onChange={handleChange}>
-            <option value="FRESHMAN">Freshman</option>
-            <option value="SOPHOMORE">Sophomore</option>
-            <option value="JUNIOR">Junior</option>
-            <option value="SENIOR">Senior</option>
-          </select>
+        {profileLoading ? (
+          <div className="space-y-3 animate-pulse">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="w-full h-12 bg-gray-800 rounded-lg" />
+            ))}
+            <div className="w-full h-12 bg-gray-800 rounded-lg mt-2" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <input className={inputClass} name="name" placeholder="Full Name" value={form.name} onChange={handleChange} />
+            <input className={inputClass} name="email" placeholder="Email" value={form.email} onChange={handleChange} />
+            <input className={inputClass} name="major" placeholder="Major" value={form.major} onChange={handleChange} />
+            <input className={inputClass} name="school" placeholder="School" value={form.school} onChange={handleChange} />
+            <input className={inputClass} name="gpa" placeholder="GPA (e.g. 3.7)" value={form.gpa} onChange={handleChange} />
+            <textarea className={inputClass} name="degreeWorksText" placeholder="Paste your DegreeWorks audit here..." rows={6} value={form.degreeWorksText} onChange={handleChange} />
+            <select className={inputClass} name="gradeLevel" value={form.gradeLevel} onChange={handleChange}>
+              <option value="FRESHMAN">Freshman</option>
+              <option value="SOPHOMORE">Sophomore</option>
+              <option value="JUNIOR">Junior</option>
+              <option value="SENIOR">Senior</option>
+            </select>
 
-          <p className="text-gray-400 text-sm pt-2">Career Goal</p>
-          <input className={inputClass} placeholder="Target Role (e.g. Software Engineer)" value={form.careerGoal.targetRole} onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetRole: e.target.value } })} />
-          <input className={inputClass} placeholder="Target Company (e.g. Google)" value={form.careerGoal.targetCompany} onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetCompany: e.target.value } })} />
-          <input className={inputClass} placeholder="Target Date (e.g. 2027)" value={form.careerGoal.targetDate} onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetDate: e.target.value } })} />
+            <p className="text-gray-400 text-sm pt-2">Career Goal</p>
+            <input className={inputClass} placeholder="Target Role (e.g. Software Engineer)" value={form.careerGoal.targetRole} onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetRole: e.target.value } })} />
+            <input className={inputClass} placeholder="Target Company (e.g. Google)" value={form.careerGoal.targetCompany} onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetCompany: e.target.value } })} />
+            <input className={inputClass} placeholder="Target Date (e.g. 2027)" value={form.careerGoal.targetDate} onChange={(e) => setForm({ ...form, careerGoal: { ...form.careerGoal, targetDate: e.target.value } })} />
 
-          <p className="text-gray-400 text-sm pt-2">Skills</p>
-          <input className={inputClass} placeholder="Current Skills (e.g. Java, Spring Boot)" value={form.skillProfile.currentSkills} onChange={(e) => setForm({ ...form, skillProfile: { ...form.skillProfile, currentSkills: e.target.value } })} />
-          <input className={inputClass} placeholder="Skill Gaps (e.g. React, System Design)" value={form.skillProfile.skillGaps} onChange={(e) => setForm({ ...form, skillProfile: { ...form.skillProfile, skillGaps: e.target.value } })} />
+            <p className="text-gray-400 text-sm pt-2">Skills</p>
+            <input className={inputClass} placeholder="Current Skills (e.g. Java, Spring Boot)" value={form.skillProfile.currentSkills} onChange={(e) => setForm({ ...form, skillProfile: { ...form.skillProfile, currentSkills: e.target.value } })} />
+            <input className={inputClass} placeholder="Skill Gaps (e.g. React, System Design)" value={form.skillProfile.skillGaps} onChange={(e) => setForm({ ...form, skillProfile: { ...form.skillProfile, skillGaps: e.target.value } })} />
 
-          <button
-            onClick={handleAiPlan}
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold py-3 rounded-lg mt-2 transition-colors flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                </svg>
-                <LoadingText />
-              </>
-            ) : "Generate AI Plan"}
-          </button>
+            <button
+              onClick={handleAiPlan}
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold py-3 rounded-lg mt-2 transition-colors flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                  <LoadingText />
+                </>
+              ) : "Generate AI Plan"}
+            </button>
 
-          {aiPlan && (() => {
-            const status = parseStatus(aiPlan);
-            const cfg = statusConfig[status] || statusConfig["BEHIND"];
-            return (
-              <div className="mt-10 space-y-3">
-                <h2 className="text-xl font-bold text-white mb-4">Your Career Assessment</h2>
-                {status && (
-                  <div className={`${cfg.bg} border ${cfg.border} rounded-xl px-6 py-5 mb-6 flex items-center gap-4`}>
-                    <span className="text-3xl">{cfg.icon}</span>
-                    <div>
-                      <p className={`text-lg font-bold ${cfg.text}`}>{cfg.label}</p>
-                      <p className="text-gray-400 text-sm mt-0.5">{cfg.sub}</p>
+            {aiPlan && (() => {
+              const status = parseStatus(aiPlan);
+              const cfg = statusConfig[status] || statusConfig["BEHIND"];
+              return (
+                <div className="mt-10 space-y-3">
+                  <h2 className="text-xl font-bold text-white mb-4">Your Career Assessment</h2>
+                  {status && (
+                    <div className={`${cfg.bg} border ${cfg.border} rounded-xl px-6 py-5 mb-6 flex items-center gap-4`}>
+                      <span className="text-3xl">{cfg.icon}</span>
+                      <div>
+                        <p className={`text-lg font-bold ${cfg.text}`}>{cfg.label}</p>
+                        <p className="text-gray-400 text-sm mt-0.5">{cfg.sub}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-                {parseSections(aiPlan).map((section, i) => (
-                  <AccordionSection key={i} title={section.title}>
-                    {renderLines(section.lines)}
-                  </AccordionSection>
-                ))}
-              </div>
-            );
-          })()}
-        </div>
+                  )}
+                  {parseSections(aiPlan).map((section, i) => (
+                    <AccordionSection key={i} title={section.title}>
+                      {renderLines(section.lines)}
+                    </AccordionSection>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        )}
       </div>
     </div>
   );
