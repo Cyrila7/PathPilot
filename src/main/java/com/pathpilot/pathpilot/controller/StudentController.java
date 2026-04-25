@@ -2,7 +2,7 @@ package com.pathpilot.pathpilot.controller;
 
 import org.springframework.web.bind.annotation.*;
 
-import com.pathpilot.pathpilot.model.ActionPlan;
+
 import com.pathpilot.pathpilot.model.Student;
 import com.pathpilot.pathpilot.repository.StudentRepository;
 import com.pathpilot.pathpilot.security.JwtUtil;
@@ -67,15 +67,6 @@ public class StudentController {
         .orElse(null);
     }
 
-    @PostMapping("/{id}/plan")
-    public ActionPlan generateActionPlan(@PathVariable Long id) {
-        Student student = studentRepository.findById(id).orElse(null);
-        if (student == null) return null;
-        ActionPlan plan = new ActionPlan();
-        plan.generate(student);
-        return plan;
-       
-    }
     @GetMapping("/me")
     public ResponseEntity<Student> getMyProfile(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");

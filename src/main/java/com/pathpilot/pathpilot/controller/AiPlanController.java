@@ -48,7 +48,7 @@ public class AiPlanController {
         String prompt = buildPrompt(student);
 
         Map<String, Object> body = new HashMap<>();
-        body.put("model", "claude-sonnet-4-5");
+        body.put("model", "claude-sonnet-4-6");
         body.put("max_tokens", 4096);
         body.put("messages", List.of(Map.of("role", "user", "content", prompt)));
 
