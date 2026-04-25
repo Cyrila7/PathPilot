@@ -1,13 +1,20 @@
 package com.pathpilot.pathpilot.controller;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.pathpilot.pathpilot.model.PlanHistory;
 import com.pathpilot.pathpilot.model.Student;
+import com.pathpilot.pathpilot.repository.PlanHistoryRepository;
 import com.pathpilot.pathpilot.repository.StudentRepository;
+import com.pathpilot.pathpilot.security.JwtUtil;
 
-import java.util.*;
+
 
 @RestController
 @RequestMapping("/students")
@@ -19,18 +26,25 @@ import java.util.*;
 public class AiPlanController {
 
     private final StudentRepository studentRepository;
+    private final PlanHistoryRepository planHistoryRepository;
+    private final JwtUtil jwtUtil;
     private final WebClient webClient;
 
     @Value("${anthropic.api.key}")
     private String API_KEY;
 
-    public AiPlanController(StudentRepository studentRepository) {
+    public AiPlanController(StudentRepository studentRepository, PlanHistoryRepository planHistoryRepository, JwtUtil jwtUtil) {
         this.studentRepository = studentRepository;
+        this.planHistoryRepository = planHistoryRepository;
+        this.jwtUtil = jwtUtil;
         this.webClient = WebClient.create();
     }
 
     @PostMapping("/{id}/ai-plan")
-    public String generateAiPlan(@PathVariable Long id) throws Exception {
+    public String generateAiPlan(
+        @PathVariable Long id,
+        @RequestHeader("Authorization") String authHeader
+    ) throws Exception {
 
         Student student = studentRepository.findById(id).orElse(null);
         if (student == null) return "Student not found";
@@ -56,7 +70,29 @@ public class AiPlanController {
         Map<String, Object> responseMap = new com.fasterxml.jackson.databind.ObjectMapper()
             .readValue(rawResponse, Map.class);
         List<Map> content = (List<Map>) responseMap.get("content");
-        return content.get(0).get("text").toString();
+        String planText = content.get(0).get("text").toString();
+
+        // extract status from plan and save to history
+        String status = "UNKNOWN";
+        for (String line : planText.split("\n")) {
+            if (line.trim().startsWith("STATUS:")) {
+                status = line.replace("STATUS:", "").trim();
+                break;
+            }
+        }
+
+        String token = authHeader.replace("Bearer ", "");
+        String email = jwtUtil.extractIdentifier(token);
+        planHistoryRepository.save(new PlanHistory(email, planText, status));
+
+        return planText;
+    }
+
+    @GetMapping("/me/plans")
+    public List<PlanHistory> getMyPlans(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String email = jwtUtil.extractIdentifier(token);
+        return planHistoryRepository.findByStudentEmailOrderByCreatedAtDesc(email);
     }
 
     private String buildPrompt(Student student) {
