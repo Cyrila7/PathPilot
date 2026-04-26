@@ -69,7 +69,7 @@ No sugarcoating. Ever.
 ![AI Plan Output](Screenshots/plan.webp)
 
 ### Generated plan
-![AI Plan Output](Screenshots/generatedPlan.png)
+![AI Plan Output](Screenshots/generatedplan.png)
 
 ---
 
