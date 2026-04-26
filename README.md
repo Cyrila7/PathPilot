@@ -54,22 +54,22 @@ No sugarcoating. Ever.
 ![Landing page](Screenshots/landingP.webp)
 
 ### How it works
-![How it works](screenshots/howitworks.webp)
+![How it works](Screenshots/howitworks.webp)
 
 ### Status system
-![Status system](screenshots/status.webp)
+![Status system](Screenshots/status.webp)
 
 ### Student profile input
-![Dashboard](screenshots/dashboard.webp)
+![Dashboard](Screenshots/dashboard.webp)
 
 ### Student profile input
-![Dashboard](screenshots/dashboard2.webp)
+![Dashboard](Screenshots/dashboard2.webp)
 
 ### AI-generated career assessment
-![AI Plan Output](screenshots/plan.webp)
+![AI Plan Output](Screenshots/plan.webp)
 
 ### Generated plan
-![AI Plan Output](screenshots/generatedPlan.png)
+![AI Plan Output](Screenshots/generatedPlan.png)
 
 ---
 
