@@ -1,32 +1,184 @@
-# PathPilot
+ PathPilot
+> The GPS from college to career.
 
-AI-powered career readiness platform for college students.
+Every student. Every major. Every school.
 
-## What it does
-Takes a student's DegreeWorks academic audit, GPA, career goal, and skills and generates a brutally honest, personalized 5-section career plan. No sugarcoating. Ever.
+PathPilot reads where you actually are, figures 
+out what your career actually requires, and hands 
+you the exact flight plan — no sugarcoating. Ever.
+
+🔗 Live: https://path-pilot-rho.vercel.app
+
+---
+
+## The Problem
+
+Schools optimize for graduation. Employers optimize 
+for performance. Students are stuck in the middle 
+with nobody translating between the two worlds.
+
+Your curriculum was designed to get you a diploma 
+— not get you employed. Those are not the same thing.
+
+**PathPilot closes that gap.**
+
+---
+
+## What It Does
+
+A student enters their profile, pastes their 
+DegreeWorks academic audit, picks their career goal, 
+and completes a quick skills check. PathPilot's AI 
+reads all of it, analyzes what their target career 
+actually requires, finds the exact gap, and delivers 
+one honest flight plan.
+
+Not a template. Not generic tips. A personalized 
+roadmap built for that specific student's exact 
+situation — with a clear status:
+
+- ⚠️ **Behind** — missing critical skills or 
+  deadlines. Here's exactly how to fix it.
+- 📍 **On Track** — doing what needs to be done. 
+  Here's what's coming up next.
+- 🚀 **Ahead** — exceeding requirements. Here are 
+  higher-level opportunities you're ready for now.
+
+No sugarcoating. Ever.
+
+---
+
+## Screenshots
+
+### Landing page
+![Landing page](Screenshots/landingP.webp)
+
+### How it works
+![How it works](screenshots/howitworks.webp)
+
+### Status system
+![Status system](screenshots/status.webp)
+
+### Student profile input
+![Dashboard](screenshots/dashboard.webp)
+
+### Student profile input
+![Dashboard](screenshots/dashboard2.webp)
+
+### AI-generated career assessment
+![AI Plan Output](screenshots/plan.webp)
+
+### Generated plan
+![AI Plan Output](screenshots/generatedPlan.png)
+
+---
 
 ## Tech Stack
-- Java + Spring Boot (REST API)
-- PostgreSQL on Railway
-- React + Vite on Vercel
-- Claude AI via Anthropic API
-- JWT Authentication (Spring Security)
 
-## Features
-- Register/login with JWT auth
-- Paste DegreeWorks academic audit
-- Grade level aware (Freshman → Senior urgency)
-- AI generates: Assessment, Priorities, Skills, Timeline, Course Recommendations
+| Layer | Technology |
+|-------|------------|
+| Backend | Java 17, Spring Boot, REST API |
+| Database | PostgreSQL (Railway) |
+| Frontend | React + Vite (Vercel) |
+| AI | Claude API (Anthropic) |
+| Auth | JWT + Spring Security |
+| Railway, Vercel, GitHub 
 
-## Endpoints
-- POST /auth/register
-- POST /auth/login
-- POST /students
-- GET /students/{id}
-- POST /students/{id}/ai-plan
+---
 
-## Live
-https://path-pilot-rho.vercel.app
+## Key Features
 
-## Built by
-Cyril — NYC College of Technology, Computer Systems
+- **JWT authentication** — register, login, 
+  protected routes, 7-day tokens
+- **DegreeWorks parsing** — student pastes their 
+  academic audit, Claude reads and extracts 
+  everything automatically
+- **Grade level aware** — Freshman through Senior, 
+  urgency and tone adjust automatically based 
+  on runway
+- **Honest status system** — Behind / On Track / 
+  Ahead determined by real gap analysis, 
+  not GPA
+- **Plan history** — every assessment saved with 
+  timestamp, track progress over time
+- **Works for every major** — Nursing, CS, Finance, 
+  Pre-Law, Education, Engineering, and more
+- **No sugarcoating** — PathPilot tells students 
+  the truth so they can act on it
+
+---
+
+## How It Works
+
+```
+Student inputs 5 things:
+1. Profile — school, major, grade level
+2. DegreeWorks — paste academic audit
+3. Career goal — type target role freely
+4. Skills check — what they can actually do
+5. Submit → Claude generates flight plan
+
+Backend flow:
+POST /students → save profile to PostgreSQL
+POST /students/{id}/ai-plan →
+  build prompt from student data →
+  WebClient → Anthropic API →
+  Claude analyzes gap →
+  parse STATUS line →
+  save to PlanHistory →
+  return flight plan to frontend
+
+Frontend:
+Parse STATUS → render badge
+Parse ## sections → render accordions
+Refresh history → show past assessments
+```
+
+## API Endpoints
+
+```
+POST   /auth/register
+POST   /auth/login
+POST   /students
+GET    /students/me
+PUT    /students/{id}
+POST   /students/{id}/ai-plan
+GET    /students/me/plans
+```
+
+## Architecture
+
+```
+React + Vite (Vercel)
+        ↓
+Spring Boot REST API (Railway)
+        ↓
+PostgreSQL (Railway)
+        ↓
+Claude API (Anthropic)
+
+Security flow:
+Request → JwtAuthFilter → extract email →
+SecurityContext → Controller →
+Repository → Database
+```
+
+## Data Model
+
+```
+User
+├── id, name, email, password (BCrypt)
+
+Student
+├── id, name, email, major, school, gpa
+├── degreeWorksText (TEXT column)
+├── gradeLevel (FRESHMAN → SENIOR enum)
+├── careerGoal (embedded — role, company, date)
+└── skillProfile (embedded — skills, gaps)
+
+PlanHistory
+├── id, studentEmail
+├── planText (TEXT column)
+├── status (BEHIND / ON TRACK / AHEAD)
+└── createdAt (LocalDateTime)
+```
