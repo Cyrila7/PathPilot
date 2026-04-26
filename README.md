@@ -1,4 +1,3 @@
-```markdown
 # PathPilot
 
 > The GPS from college to career.
@@ -275,4 +274,4 @@ Computer Systems Technology
 Targeting: Java Software Engineering Internship, Fall 2026
 
 ---
-```
+
