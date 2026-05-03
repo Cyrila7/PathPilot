@@ -56,7 +56,7 @@ public class AiPlanController {
 
         Map<String, Object> body = new HashMap<>();
         body.put("model", "claude-sonnet-4-6");
-        body.put("max_tokens", 4096);
+        body.put("max_tokens", 1024); // was 4096 tooo much 
         body.put("messages", List.of(Map.of("role", "user", "content", prompt)));
 
         String rawResponse = webClient
