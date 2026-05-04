@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
+
 import com.pathpilot.pathpilot.model.PlanHistory;
 import com.pathpilot.pathpilot.model.Student;
 import com.pathpilot.pathpilot.repository.PlanHistoryRepository;
@@ -36,17 +37,25 @@ public class AiPlanController {
     @Value("${anthropic.api.key}")
     private String API_KEY;
 
-    public AiPlanController(StudentRepository studentRepository, PlanHistoryRepository planHistoryRepository, JwtUtil jwtUtil) {
+    public AiPlanController(
+            StudentRepository studentRepository,
+            PlanHistoryRepository planHistoryRepository,
+            JwtUtil jwtUtil
+    ) {
         this.studentRepository = studentRepository;
         this.planHistoryRepository = planHistoryRepository;
         this.jwtUtil = jwtUtil;
         this.webClient = WebClient.create();
     }
 
+    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    // POST /students/{id}/ai-plan
+    // Generates a new AI career plan for the student
+    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     @PostMapping("/{id}/ai-plan")
     public String generateAiPlan(
-        @PathVariable Long id,
-        @RequestHeader("Authorization") String authHeader
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String authHeader
     ) throws Exception {
 
         Student student = studentRepository.findById(id).orElse(null);
@@ -56,25 +65,30 @@ public class AiPlanController {
 
         Map<String, Object> body = new HashMap<>();
         body.put("model", "claude-sonnet-4-6");
-        body.put("max_tokens", 4096); // was 4096 tooo much // testing back with 4096 cause the previous one cuts the response too much instead of following the prompt
-        body.put("messages", List.of(Map.of("role", "user", "content", prompt)));
+        body.put("max_tokens", 2048);
+        body.put("messages", List.of(
+                Map.of("role", "user", "content", prompt)
+        ));
 
         String rawResponse = webClient
-            .post()
-            .uri("https://api.anthropic.com/v1/messages")
-            .header("x-api-key", API_KEY)
-            .header("anthropic-version", "2023-06-01")
-            .header("content-type", "application/json")
-            .bodyValue(body)
-            .retrieve()
-            .bodyToMono(String.class)
-            .block();
+                .post()
+                .uri("https://api.anthropic.com/v1/messages")
+                .header("x-api-key", API_KEY)
+                .header("anthropic-version", "2023-06-01")
+                .header("content-type", "application/json")
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
 
-        Map<String, Object> responseMap = new com.fasterxml.jackson.databind.ObjectMapper()
-            .readValue(rawResponse, Map.class);
+        Map<String, Object> responseMap =
+                new com.fasterxml.jackson.databind.ObjectMapper()
+                        .readValue(rawResponse, Map.class);
+
         List<Map> content = (List<Map>) responseMap.get("content");
         String planText = content.get(0).get("text").toString();
 
+        // Parse STATUS line from top of response
         String status = "UNKNOWN";
         for (String line : planText.split("\n")) {
             if (line.trim().startsWith("STATUS:")) {
@@ -85,78 +99,161 @@ public class AiPlanController {
 
         String token = authHeader.replace("Bearer ", "");
         String email = jwtUtil.extractIdentifier(token);
+
         planHistoryRepository.save(new PlanHistory(email, planText, status));
 
         return planText;
     }
 
+    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    // GET /students/me/plans
+    // Returns all past plans for the logged-in student
+    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     @GetMapping("/me/plans")
-    public List<PlanHistory> getMyPlans(@RequestHeader("Authorization") String authHeader) {
+    public List<PlanHistory> getMyPlans(
+            @RequestHeader("Authorization") String authHeader
+    ) {
         String token = authHeader.replace("Bearer ", "");
         String email = jwtUtil.extractIdentifier(token);
-        return planHistoryRepository.findByStudentEmailOrderByCreatedAtDesc(email);
+
+        return planHistoryRepository
+                .findByStudentEmailOrderByCreatedAtDesc(email);
     }
 
+    /* 
+    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    // GET /students/me/jobs
+    // Returns a matched job board URL based on the student's career goal.
+    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    @GetMapping("/me/jobs")
+    public Map<String, String> getMatchedJobs(
+            @RequestHeader("Authorization") String authHeader
+    ) {
+
+        String token = authHeader.replace("Bearer ", "");
+        String email = jwtUtil.extractIdentifier(token);
+
+        Student student = studentRepository.findByEmail(email).orElse(null);
+
+        if (student == null || student.getCareerGoal() == null) {
+            return Map.of(
+                    "url", "https://www.newgrad-jobs.com/entry-level-jobs",
+                    "label", "Browse All Entry-Level Jobs"
+            );
+        }
+
+        String role = student.getCareerGoal().getTargetRole().toLowerCase();
+        String url;
+        String label;
+
+        if (role.contains("software") || role.contains("swe")
+                || role.contains("backend") || role.contains("frontend")) {
+
+            url = "https://www.newgrad-jobs.com/entry-level-jobs/software-engineer-jobs";
+            label = "Software Engineer Internships";
+
+        } else if (role.contains("data analyst")) {
+
+            url = "https://www.newgrad-jobs.com/entry-level-jobs/data-analyst";
+            label = "Data Analyst Internships";
+
+        } else if (role.contains("machine learning")
+                || role.contains("ml") || role.contains("ai")) {
+
+            url = "https://www.newgrad-jobs.com/entry-level-jobs";
+            label = "AI/ML Internships";
+
+        } else if (role.contains("cyber") || role.contains("security")) {
+
+            url = "https://www.newgrad-jobs.com/entry-level-jobs/cyber-security";
+            label = "Cybersecurity Internships";
+
+        } else if (role.contains("product") || role.contains("pm")) {
+
+            url = "https://www.newgrad-jobs.com/entry-level-jobs";
+            label = "Product Management Internships";
+
+        } else if (role.contains("data engineer")) {
+
+            url = "https://www.newgrad-jobs.com/entry-level-jobs/data-analyst";
+            label = "Data Engineer Internships";
+
+        } else {
+
+            url = "https://www.newgrad-jobs.com/entry-level-jobs";
+            label = "Browse Entry-Level Jobs";
+        }
+
+        return Map.of("url", url, "label", label);
+    }
+        */
+    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    // buildPrompt()
+    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     private String buildPrompt(Student student) {
+
         String today = java.time.LocalDate.now().toString();
 
-        return String.format("""
-            You are PathPilot, a brutally honest career advisor for college students. No sugarcoating. No generic advice. Be direct, specific, and practical.
+        String degreeAudit = student.getDegreeWorksText();
+        if (degreeAudit != null && degreeAudit.length() > 300) {
+            degreeAudit = degreeAudit.substring(0, 300) + "... [truncated]";
+        }
 
-            Today's date is %s.
+        String targetRole = student.getCareerGoal() != null
+                ? student.getCareerGoal().getTargetRole() : "Not set";
 
-            Student Profile:
-            - Name: %s
-            - Major: %s
-            - School: %s
-            - Grade: %s
-            - GPA: %.2f
-            - Degree Works Text: %s
-            - Target Role: %s at %s
-            - Current Skills: %s
-            - Skill Gaps: %s
+        String targetCompany = student.getCareerGoal() != null
+                ? student.getCareerGoal().getTargetCompany() : "Not set";
 
-            Important instruction:
-            The student's grade determines their runway (time left before internships/full-time recruiting).
-            - Freshman/Sophomore = long runway → prioritize exploration, fundamentals, and compounding skills.
-            - Junior = limited runway → prioritize internships, recruiting readiness, and fast skill acquisition.
-            - Senior = almost no runway → prioritize immediate employability, aggressive applications, and backup plans.
+        String currentSkills = student.getSkillProfile() != null
+                ? student.getSkillProfile().getCurrentSkills() : "Not set";
 
-            Adjust urgency, tone, and priorities accordingly. Be harsher and more urgent when runway is short.
+        String skillGaps = student.getSkillProfile() != null
+                ? student.getSkillProfile().getSkillGaps() : "Not set";
 
-            At the very top of your response, before anything else, output exactly one of these three lines:
-            STATUS: BEHIND
-            STATUS: ON TRACK
-            STATUS: AHEAD
-
-            Base the status on:
-            - BEHIND: No internship experience, no real projects, significant skill gaps, or aggressive timeline with low preparation
-            - ON TRACK: Has projects or relevant skills, realistic timeline, making steady progress
-            - AHEAD: Has multiple strong projects, internship experience, strong skills aligned to target role
-
-            Then continue with the full assessment below it.
-
-            Generate a brutally honest, personalized action plan.
-
-            Format it as:
-            ## 1. Overall Assessment
-            ## 2. Top 3 Priorities Right Now
-            ## 3. Skills to Learn First (Ordered by Priority)
-            ## 4. Timeline to First Internship
-            ## 5. Recommended Next Semester Courses
-            ## Final Reality Check
-            """,
-            today,
-            student.getName(),
-            student.getMajor(),
-            student.getSchool(),
-            student.getGradeLevel(),
-            student.getGpa(),
-            student.getDegreeWorksText(),
-            student.getCareerGoal() != null ? student.getCareerGoal().getTargetRole() : "Not set",
-            student.getCareerGoal() != null ? student.getCareerGoal().getTargetCompany() : "Not set",
-            student.getSkillProfile() != null ? student.getSkillProfile().getCurrentSkills() : "Not set",
-            student.getSkillProfile() != null ? student.getSkillProfile().getSkillGaps() : "Not set"
+        return String.format(
+                "You are PathPilot, a brutally honest career advisor for college\n"
+                        + "students. No sugarcoating. No generic advice. Be direct, specific,\n"
+                        + "and practical. Keep your total response under 1800 tokens.\n\n"
+                        + "Today: %s\n\n"
+                        + "Student:\n"
+                        + "- Name: %s\n"
+                        + "- Major: %s | School: %s | Grade: %s | GPA: %.2f\n"
+                        + "- Degree Audit (summary): %s\n"
+                        + "- Target: %s at %s\n"
+                        + "- Current Skills: %s\n"
+                        + "- Skill Gaps: %s\n\n"
+                        + "Grade-based urgency rules:\n"
+                        + "- Freshman/Sophomore: long runway -> explore, build fundamentals\n"
+                        + "- Junior: limited runway -> internship-ready fast\n"
+                        + "- Senior: almost no runway -> apply aggressively, backup plans\n\n"
+                        + "RESPONSE FORMAT (follow exactly):\n\n"
+                        + "First line must be exactly one of:\n"
+                        + "STATUS: BEHIND\n"
+                        + "STATUS: ON TRACK\n"
+                        + "STATUS: AHEAD\n\n"
+                        + "Status guide:\n"
+                        + "- BEHIND: no internship, major skill gaps, aggressive timeline\n"
+                        + "- ON TRACK: has projects or skills, realistic timeline\n"
+                        + "- AHEAD: multiple projects, internship experience, strong skills\n\n"
+                        + "Then output exactly these 4 sections and nothing else:\n\n"
+                        + "## 1. Top 3 Priorities Right Now\n"
+                        + "## 2. Skills to Learn First (Ordered by Priority)\n"
+                        + "## 3. Timeline to First Internship\n"
+                        + "## 4. Recommended Next Semester Courses\n\n"
+                        + "End section 3 with one brutal, honest closing sentence.\n"
+                        + "No intro. No outro. No extra commentary outside the 4 sections.\n",
+                today,
+                student.getName(),
+                student.getMajor(),
+                student.getSchool(),
+                student.getGradeLevel(),
+                student.getGpa(),
+                degreeAudit,
+                targetRole,
+                targetCompany,
+                currentSkills,
+                skillGaps
         );
     }
 }
