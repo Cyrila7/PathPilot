@@ -164,18 +164,22 @@ public class AiPlanController {
                 + "## 3. Timeline to First Internship\n"
                 + "Month-by-month plan. End with one brutal honest sentence.\n\n"
                 + "## 4. Recommended Next Semester Courses\n"
+                + "Today is %s. Based on that, determine what semester is coming next "
+                + "(e.g. if it's May/June -> Fall semester, if it's November/December -> Spring semester). "
+                + "State the upcoming semester at the top of this section (e.g. 'For Fall 2026:'). "
                 + "Read the degree audit above carefully. Identify required or core courses "
                 + "that are NOT yet completed or in progress. Recommend the 3-4 highest priority "
                 + "courses to take NEXT SEMESTER specifically — use the actual course names from "
                 + "their program if visible in the audit. Explain why each one matters for their "
-                + "internship goal in short, not just graduation.\n",
+                + "internship goal, not just graduation.\n",
                 today,
                 student.getName(),
                 student.getMajor(), student.getSchool(),
                 student.getGradeLevel(), student.getGpa(),
                 degreeAudit,
                 targetRole, targetCompany,
-                currentSkills, skillGaps
+                currentSkills, skillGaps,
+                today
         );
     }
 }
