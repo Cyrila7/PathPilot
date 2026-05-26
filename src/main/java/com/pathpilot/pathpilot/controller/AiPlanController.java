@@ -50,7 +50,6 @@ public class AiPlanController {
 
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     // POST /students/{id}/ai-plan
-    // Generates a new AI career plan for the student
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     @PostMapping("/{id}/ai-plan")
     public String generateAiPlan(
@@ -88,7 +87,6 @@ public class AiPlanController {
         List<Map> content = (List<Map>) responseMap.get("content");
         String planText = content.get(0).get("text").toString();
 
-        // Parse STATUS line from top of response
         String status = "UNKNOWN";
         for (String line : planText.split("\n")) {
             if (line.trim().startsWith("STATUS:")) {
@@ -107,7 +105,6 @@ public class AiPlanController {
 
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     // GET /students/me/plans
-    // Returns all past plans for the logged-in student
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     @GetMapping("/me/plans")
     public List<PlanHistory> getMyPlans(
@@ -115,78 +112,10 @@ public class AiPlanController {
     ) {
         String token = authHeader.replace("Bearer ", "");
         String email = jwtUtil.extractIdentifier(token);
-
         return planHistoryRepository
                 .findByStudentEmailOrderByCreatedAtDesc(email);
     }
 
-    /* 
-    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-    // GET /students/me/jobs
-    // Returns a matched job board URL based on the student's career goal.
-    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-    @GetMapping("/me/jobs")
-    public Map<String, String> getMatchedJobs(
-            @RequestHeader("Authorization") String authHeader
-    ) {
-
-        String token = authHeader.replace("Bearer ", "");
-        String email = jwtUtil.extractIdentifier(token);
-
-        Student student = studentRepository.findByEmail(email).orElse(null);
-
-        if (student == null || student.getCareerGoal() == null) {
-            return Map.of(
-                    "url", "https://www.newgrad-jobs.com/entry-level-jobs",
-                    "label", "Browse All Entry-Level Jobs"
-            );
-        }
-
-        String role = student.getCareerGoal().getTargetRole().toLowerCase();
-        String url;
-        String label;
-
-        if (role.contains("software") || role.contains("swe")
-                || role.contains("backend") || role.contains("frontend")) {
-
-            url = "https://www.newgrad-jobs.com/entry-level-jobs/software-engineer-jobs";
-            label = "Software Engineer Internships";
-
-        } else if (role.contains("data analyst")) {
-
-            url = "https://www.newgrad-jobs.com/entry-level-jobs/data-analyst";
-            label = "Data Analyst Internships";
-
-        } else if (role.contains("machine learning")
-                || role.contains("ml") || role.contains("ai")) {
-
-            url = "https://www.newgrad-jobs.com/entry-level-jobs";
-            label = "AI/ML Internships";
-
-        } else if (role.contains("cyber") || role.contains("security")) {
-
-            url = "https://www.newgrad-jobs.com/entry-level-jobs/cyber-security";
-            label = "Cybersecurity Internships";
-
-        } else if (role.contains("product") || role.contains("pm")) {
-
-            url = "https://www.newgrad-jobs.com/entry-level-jobs";
-            label = "Product Management Internships";
-
-        } else if (role.contains("data engineer")) {
-
-            url = "https://www.newgrad-jobs.com/entry-level-jobs/data-analyst";
-            label = "Data Engineer Internships";
-
-        } else {
-
-            url = "https://www.newgrad-jobs.com/entry-level-jobs";
-            label = "Browse Entry-Level Jobs";
-        }
-
-        return Map.of("url", url, "label", label);
-    }
-        */
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     // buildPrompt()
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
@@ -195,8 +124,8 @@ public class AiPlanController {
         String today = java.time.LocalDate.now().toString();
 
         String degreeAudit = student.getDegreeWorksText();
-        if (degreeAudit != null && degreeAudit.length() > 300) {
-            degreeAudit = degreeAudit.substring(0, 300) + "... [truncated]";
+        if (degreeAudit != null && degreeAudit.length() > 800) {
+            degreeAudit = degreeAudit.substring(0, 800) + "... [truncated]";
         }
 
         String targetRole = student.getCareerGoal() != null
@@ -211,27 +140,42 @@ public class AiPlanController {
         String skillGaps = student.getSkillProfile() != null
                 ? student.getSkillProfile().getSkillGaps() : "Not set";
 
-return String.format(
-    "You are PathPilot — brutally honest career advisor. No fluff. Be specific.\n\n"
-    + "Today: %s | Student: %s | %s at %s | %s | GPA: %.2f\n"
-    + "Audit: %s\n"
-    + "Target: %s at %s\n"
-    + "Skills: %s | Gaps: %s\n\n"
-    + "First line must be exactly: STATUS: BEHIND or STATUS: ON TRACK or STATUS: AHEAD\n"
-    + "BEHIND = no internship + major gaps. ON TRACK = has projects/skills. AHEAD = internship + strong skills.\n\n"
-    + "Output exactly these 4 sections, concise, no intro, no outro:\n"
-    + "## 1. Top 3 Priorities Right Now\n"
-    + "## 2. Skills to Learn First (Ordered by Priority)\n"
-    + "## 3. Timeline to First Internship\n"
-    + "## 4. Recommended Next Semester Courses\n"
-    + "End section 3 with one brutal honest sentence.\n",
-    today,
-    student.getName(),
-    student.getMajor(), student.getSchool(),
-    student.getGradeLevel(), student.getGpa(),
-    degreeAudit,
-    targetRole, targetCompany,
-    currentSkills, skillGaps
-);
+        return String.format(
+                "You are PathPilot — brutally honest career advisor. No fluff. Be specific.\n\n"
+                + "Today: %s\n"
+                + "Student: %s | Major: %s at %s | Year: %s | GPA: %.2f\n"
+                + "Degree Audit: %s\n"
+                + "Target: %s at %s\n"
+                + "Skills: %s | Gaps: %s\n\n"
+                + "Grade-level urgency rules (apply strictly):\n"
+                + "- FRESHMAN/SOPHOMORE: build fundamentals, explore, no internship panic yet\n"
+                + "- JUNIOR: limited runway — must be internship-ready this cycle\n"
+                + "- SENIOR: almost no runway — apply aggressively now, have backup plans\n\n"
+                + "First line must be exactly one of:\n"
+                + "STATUS: BEHIND\n"
+                + "STATUS: ON TRACK\n"
+                + "STATUS: AHEAD\n"
+                + "BEHIND = no internship + major skill gaps. ON TRACK = has projects or skills. AHEAD = internship + strong skills.\n\n"
+                + "Output exactly these 4 sections. No intro. No outro.\n\n"
+                + "## 1. Top 3 Priorities Right Now\n"
+                + "3 specific actions the student must do immediately. Be direct.\n\n"
+                + "## 2. Skills to Learn First (Ordered by Priority)\n"
+                + "Order by what blocks the internship most. Be specific to their stack.\n\n"
+                + "## 3. Timeline to First Internship\n"
+                + "Month-by-month plan. End with one brutal honest sentence.\n\n"
+                + "## 4. Recommended Next Semester Courses\n"
+                + "Read the degree audit above carefully. Identify required or core courses "
+                + "that are NOT yet completed or in progress. Recommend the 3-4 highest priority "
+                + "courses to take NEXT SEMESTER specifically — use the actual course names from "
+                + "their program if visible in the audit. Explain why each one matters for their "
+                + "internship goal in short, not just graduation.\n",
+                today,
+                student.getName(),
+                student.getMajor(), student.getSchool(),
+                student.getGradeLevel(), student.getGpa(),
+                degreeAudit,
+                targetRole, targetCompany,
+                currentSkills, skillGaps
+        );
     }
 }
