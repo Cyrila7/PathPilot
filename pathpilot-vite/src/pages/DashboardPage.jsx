@@ -167,9 +167,14 @@ function ScoreRing({ score }) {
 
 function estimateScore(planText) {
   const status = parseStatus(planText);
-  if (status === "AHEAD") return Math.floor(Math.random() * 15) + 75;
-  if (status === "ON TRACK") return Math.floor(Math.random() * 20) + 50;
-  return Math.floor(Math.random() * 25) + 20;
+  let hash = 0;
+  for (let i = 0; i < planText.length; i++) {
+    hash = (hash * 31 + planText.charCodeAt(i)) & 0xffffffff;
+  }
+  const abs = Math.abs(hash);
+  if (status === "AHEAD") return 75 + (abs % 15);
+  if (status === "ON TRACK") return 50 + (abs % 20);
+  return 20 + (abs % 25);
 }
 
 function DashboardPage() {
@@ -408,8 +413,9 @@ function DashboardPage() {
                     const date = new Date(plan.createdAt).toLocaleDateString("en-US", {
                       month: "short", day: "numeric", year: "numeric",
                     });
+                    const planScore = estimateScore(plan.planText || "");
                     return (
-                      <AccordionSection key={plan.id} title={`${date} — ${plan.status}`}>
+                      <AccordionSection key={plan.id} title={`${date} — ${plan.status} — Score: ${planScore}`}>
                         <div className={`${pcfg.bg} border ${pcfg.border} rounded-xl px-4 py-3 mb-4 flex items-center gap-3`}>
                           <span className="text-2xl">{pcfg.icon}</span>
                           <div>
@@ -427,6 +433,11 @@ function DashboardPage() {
                   })}
                 </div>
               </div>
+            )}
+            {planHistory.length === 1 && (
+              <p className="text-gray-600 text-xs text-center pb-6">
+                Regenerate your score to start tracking progress over time.
+              </p>
             )}
           </>
         )}
