@@ -44,7 +44,11 @@ public class StudentController {
     }
 
     @PostMapping
-    public Student createStudent(@RequestBody Student student) {
+    public Student createStudent(@RequestBody Student student,
+                                @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String email = jwtUtil.extractIdentifier(token);
+        student.setEmail(email);
         return studentRepository.save(student);
     }
 
@@ -59,19 +63,26 @@ public class StudentController {
     }
 
     @PutMapping("/{id}")
-    public Student updateStudent(@PathVariable Long id, @RequestBody Student updatedStudent) {
-    return studentRepository.findById(id)
-        .map(student -> {
-            student.setName(updatedStudent.getName());
-            student.setEmail(updatedStudent.getEmail());
-            student.setMajor(updatedStudent.getMajor());
-            student.setSchool(updatedStudent.getSchool());
-            student.setGpa(updatedStudent.getGpa());
-            student.setDegreeWorksText(updatedStudent.getDegreeWorksText());
-            student.setGradeLevel(updatedStudent.getGradeLevel());
-            return studentRepository.save(student);
-        })
-        .orElse(null);
+    public Student updateStudent(@PathVariable Long id,
+                                @RequestBody Student updatedStudent,
+                                @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        String email = jwtUtil.extractIdentifier(token);
+
+        return studentRepository.findById(id)
+            .map(student -> {
+                student.setName(updatedStudent.getName());
+                student.setEmail(email); // always from JWT, never from body
+                student.setMajor(updatedStudent.getMajor());
+                student.setSchool(updatedStudent.getSchool());
+                student.setGpa(updatedStudent.getGpa());
+                student.setDegreeWorksText(updatedStudent.getDegreeWorksText());
+                student.setGradeLevel(updatedStudent.getGradeLevel());
+                student.setCareerGoal(updatedStudent.getCareerGoal());
+                student.setSkillProfile(updatedStudent.getSkillProfile());
+                return studentRepository.save(student);
+            })
+            .orElse(null);
     }
 
     @GetMapping("/me")
