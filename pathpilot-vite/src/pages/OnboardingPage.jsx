@@ -526,7 +526,7 @@ function OnboardingPage() {
 
             // always redirect regardless of how stream ended
             localStorage.setItem("onboardingComplete", "true");
-            navigate("/dashboard");
+            setTimeout(() => navigate("/dashboard"), 100);
     } catch (err) {
       setError(err.message);
       setStep(4);
