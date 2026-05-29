@@ -511,7 +511,12 @@ function OnboardingPage() {
         const { done, value } = await reader.read();
         if (done) break;
         const chunk = decoder.decode(value);
-        setStreamingText(prev => prev + chunk);
+        const lines = chunk.split('\n');
+        const text = lines
+          .filter(line => line.startsWith('data:'))
+          .map(line => line.replace(/^data:/, ''))
+          .join('');
+        setStreamingText(prev => prev + text);
       }
 
       // flag so dashboard knows onboarding just completed — skip the "no plans" redirect
