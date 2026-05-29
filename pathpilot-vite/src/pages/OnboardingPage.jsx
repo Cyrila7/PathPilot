@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const FONT = { fontFamily: "Georgia, 'Times New Roman', Times, serif" };
@@ -230,9 +230,9 @@ function StepSkills({ data, onChange }) {
 
   return (
     <div className="space-y-5">
-      {/* <p className="text-gray-400 text-sm leading-relaxed">
+      <p className="text-gray-400 text-sm leading-relaxed">
         Be honest — this is what makes the score accurate.
-      </p> */}
+      </p>
       {questions.map(q => (
         <div key={q.key}>
           <label className="text-sm font-semibold text-white mb-2 block">{q.label}</label>
@@ -344,6 +344,67 @@ function OnboardingPage() {
   function updateAudit(key, val) { setAudit(a => ({ ...a, [key]: val })); }
   function updateRole(key, val) { setRole(r => ({ ...r, [key]: val })); }
   function updateSkills(key, val) { setSkills(s => ({ ...s, [key]: val })); }
+
+  // ─── Pre-fill from existing profile ─────────────────────────────────────
+  useEffect(() => {
+    async function prefill() {
+      try {
+        const res = await fetch(
+          "https://pathpilot-production-de7c.up.railway.app/students/me",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) return;
+        const s = await res.json();
+
+        if (s.name) setProfile({
+          name: s.name || "",
+          school: s.school || "",
+          major: s.major || "",
+          gpa: s.gpa || "",
+          gradeLevel: s.gradeLevel || "SOPHOMORE",
+        });
+
+        if (s.degreeWorksText) setAudit(a => ({
+          ...a,
+          degreeWorksText: s.degreeWorksText || "",
+        }));
+
+        if (s.careerGoal) {
+          // strip the tier that was appended e.g. "JP Morgan (Any)"
+          const rawCompany = s.careerGoal.targetCompany || "";
+          const company = rawCompany.replace(/\s*\(.*?\)\s*$/, "");
+          const tierMatch = rawCompany.match(/\((.+?)\)$/);
+          const tier = tierMatch ? tierMatch[1] : "Any";
+          setRole({
+            targetRole: s.careerGoal.targetRole || "Software Engineer Intern",
+            targetCompany: company,
+            companyTier: tier,
+            targetDate: s.careerGoal.targetDate || "",
+          });
+        }
+
+        if (s.skillProfile) {
+          // parse skillGaps back into individual keys
+          const gaps = s.skillProfile.skillGaps || "";
+          const extract = (key) => {
+            const match = gaps.match(new RegExp(`${key}:\\s*([^,]+)`));
+            return match ? match[1].trim() : "";
+          };
+          setSkills({
+            hasProjects: extract("GitHub"),
+            leetcodeLevel: extract("LeetCode"),
+            internshipExp: extract("Internship"),
+            dsaLevel: extract("DSA"),
+            builtEndToEnd: extract("End-to-end project"),
+            currentSkills: s.skillProfile.currentSkills || "",
+          });
+        }
+      } catch (err) {
+        // no profile yet — fresh start, leave defaults
+      }
+    }
+    prefill();
+  }, []);
 
   function validateStep() {
     if (step === 1) {
