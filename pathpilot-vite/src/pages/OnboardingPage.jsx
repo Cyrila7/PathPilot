@@ -505,24 +505,28 @@ function OnboardingPage() {
       if (!planRes.ok) throw new Error("Failed to generate your plan. Please try again.");
 
       const reader = planRes.body.getReader();
-      const decoder = new TextDecoder();
+            const decoder = new TextDecoder();
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-        const text = lines
-          .filter(line => line.startsWith('data:'))
-          .map(line => line.replace(/^data:/, ''))
-          .join('');
-        setStreamingText(prev => prev + text);
-      }
+            try {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+                const text = lines
+                  .filter(line => line.startsWith('data:'))
+                  .map(line => line.replace(/^data:\s*/, ''))
+                  .join('');
+                setStreamingText(prev => prev + text);
+              }
+            } catch (streamErr) {
+              // stream closed — plan was already saved on backend
+              console.log("Stream closed:", streamErr);
+            }
 
-      // flag so dashboard knows onboarding just completed — skip the "no plans" redirect
-      localStorage.setItem("onboardingComplete", "true");
-
-      navigate("/dashboard");
+            // always redirect regardless of how stream ended
+            localStorage.setItem("onboardingComplete", "true");
+            navigate("/dashboard");
     } catch (err) {
       setError(err.message);
       setStep(4);
