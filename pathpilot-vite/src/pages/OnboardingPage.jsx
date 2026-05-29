@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const FONT = { fontFamily: "Georgia, 'Times New Roman', Times, serif" };
@@ -269,49 +269,46 @@ function StepSkills({ data, onChange }) {
 }
 
 // ─── Step 5: Processing ──────────────────────────────────────────────────────
-function StepProcessing() {
-  const steps = [
-    "Reading your academic audit…",
-    "Comparing against SWE internship requirements…",
-    "Identifying skill gaps…",
-    "Calculating your readiness score…",
-    "Building your action plan…",
-  ];
-  const [current, setCurrent] = useState(0);
+function StepProcessing({ streamingText }) {
+  const bottomRef = React.useRef(null);
 
-  useState(() => {
-    const interval = setInterval(() => {
-      setCurrent(i => (i + 1 < steps.length ? i + 1 : i));
-    }, 1200);
-    return () => clearInterval(interval);
-  }, []);
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [streamingText]);
+
+  const hasText = streamingText && streamingText.length > 0;
 
   return (
-    <div className="py-8 space-y-6 text-center">
-      <div className="flex justify-center">
-        <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    <div className="py-4 space-y-6">
+      <div className="flex items-center gap-3">
+        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin shrink-0" />
+        <p className="text-sm text-blue-400 font-semibold">
+          {hasText ? "Generating your plan..." : "Analyzing your profile..."}
+        </p>
       </div>
-      <div className="space-y-3">
-        {steps.map((step, i) => (
-          <div
-            key={i}
-            className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all ${
-              i < current
-                ? "opacity-40"
-                : i === current
-                ? "bg-blue-950 border border-blue-800"
-                : "opacity-20"
-            }`}
-          >
-            <span className="text-lg">
-              {i < current ? "✓" : i === current ? "→" : "·"}
-            </span>
-            <span className={`text-sm ${i === current ? "text-white font-semibold" : "text-gray-400"}`}>
-              {step}
-            </span>
+      <div className="bg-gray-900 border border-gray-700 rounded-xl p-5 min-h-48 max-h-96 overflow-y-auto">
+        {hasText ? (
+          <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
+            {streamingText}
+            <span className="inline-block w-2 h-4 bg-blue-400 ml-0.5 animate-pulse" />
           </div>
-        ))}
+        ) : (
+          <div className="space-y-3">
+            {["Reading your academic audit...", "Comparing against SWE requirements...", "Calculating your readiness score..."].map((msg, i) => (
+              <div key={i} className="flex items-center gap-2 opacity-40">
+                <span className="text-blue-500 text-xs">→</span>
+                <span className="text-gray-400 text-sm">{msg}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        <div ref={bottomRef} />
       </div>
+      <p className="text-gray-600 text-xs text-center">
+        This takes about 20-30 seconds. You will be redirected automatically.
+      </p>
     </div>
   );
 }
@@ -323,6 +320,7 @@ function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [streamingText, setStreamingText] = useState("");
 
   const [profile, setProfile] = useState({
     name: "", school: "", major: "", gpa: "", gradeLevel: "SOPHOMORE",
@@ -498,12 +496,23 @@ function OnboardingPage() {
         student = await createRes.json();
       }
 
-      // generate plan
+      // generate plan — streaming
+      setStreamingText("");
       const planRes = await fetch(
         `https://pathpilot-production-de7c.up.railway.app/students/${student.id}/ai-plan`,
         { method: "POST", headers: { Authorization: `Bearer ${token}` } }
       );
       if (!planRes.ok) throw new Error("Failed to generate your plan. Please try again.");
+
+      const reader = planRes.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        setStreamingText(prev => prev + chunk);
+      }
 
       // flag so dashboard knows onboarding just completed — skip the "no plans" redirect
       localStorage.setItem("onboardingComplete", "true");
@@ -520,7 +529,7 @@ function OnboardingPage() {
   const progress = ((step - 1) / (STEPS.length - 1)) * 100;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-6 py-12" style={FONT}>
+    <div className="min-h-screen bg-gray-950 text-white px-6 py-12">
       <div className="max-w-xl mx-auto">
 
         {/* Header */}
@@ -597,7 +606,7 @@ function OnboardingPage() {
           {step === 2 && <StepAudit data={audit} onChange={updateAudit} />}
           {step === 3 && <StepRole data={role} onChange={updateRole} />}
           {step === 4 && <StepSkills data={skills} onChange={updateSkills} />}
-          {step === 5 && <StepProcessing />}
+          {step === 5 && <StepProcessing streamingText={streamingText} />}
         </div>
 
         {/* Navigation */}

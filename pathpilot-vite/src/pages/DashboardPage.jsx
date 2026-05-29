@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const FONT = { fontFamily: "Georgia, 'Times New Roman', Times, serif" };
 
 const STATUS_CONFIG = {
   BEHIND: {
@@ -153,10 +152,10 @@ function ScoreRing({ score }) {
           transform="rotate(-90 70 70)"
           style={{ transition: "stroke-dashoffset 1s ease" }}
         />
-        <text x="70" y="65" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold" fontFamily="Georgia, serif">
+        <text x="70" y="65" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold" fontFamily="Inter, sans-serif">
           {score}
         </text>
-        <text x="70" y="84" textAnchor="middle" fill="#6b7280" fontSize="11" fontFamily="Georgia, serif">
+        <text x="70" y="84" textAnchor="middle" fill="#6b7280" fontSize="11" fontFamily="Inter, sans-serif">
           / 100
         </text>
       </svg>
@@ -257,7 +256,7 @@ function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center" style={FONT}>
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -279,7 +278,7 @@ function DashboardPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-4 py-10" style={FONT}>
+    <div className="min-h-screen bg-gray-950 text-white px-4 py-10">
       <div className="max-w-2xl mx-auto">
 
         {/* Nav */}
