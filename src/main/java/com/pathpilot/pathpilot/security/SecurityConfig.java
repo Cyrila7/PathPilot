@@ -59,6 +59,7 @@ public class SecurityConfig {
     http
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
+            .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ASYNC).permitAll()
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers("/auth/register", "/auth/login").permitAll()
             .anyRequest().authenticated()
