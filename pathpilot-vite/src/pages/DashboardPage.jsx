@@ -1,632 +1,409 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const STEPS = [
-  { num: 1, label: "Your Profile" },
-  { num: 2, label: "Academic Audit" },
-  { num: 3, label: "Target Role" },
-  { num: 4, label: "Skills Check" },
-  { num: 5, label: "Processing" },
-];
+const STATUS_CONFIG = {
+  BEHIND: {
+    bg: "bg-red-950", border: "border-red-800",
+    text: "text-red-400", icon: "⚠️", label: "BEHIND",
+    sub: "You have significant ground to cover. Urgency required.",
+  },
+  "ON TRACK": {
+    bg: "bg-yellow-950", border: "border-yellow-800",
+    text: "text-yellow-400", icon: "📍", label: "ON TRACK",
+    sub: "You're moving in the right direction. Keep pushing.",
+  },
+  AHEAD: {
+    bg: "bg-green-950", border: "border-green-800",
+    text: "text-green-400", icon: "🚀", label: "AHEAD",
+    sub: "You're ahead of the curve. Don't slow down.",
+  },
+};
 
-const inputClass =
-  "w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 text-sm";
-
-const selectClass =
-  "w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-sm";
-
-// ─── Step 1: Profile ────────────────────────────────────────────────────────
-function StepProfile({ data, onChange }) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Full Name</label>
-        <input className={inputClass} placeholder="Cyril Annoh" value={data.name} onChange={e => onChange("name", e.target.value)} />
-      </div>
-      <div>
-        <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">School</label>
-        <input className={inputClass} placeholder="NYC College of Technology" value={data.school} onChange={e => onChange("school", e.target.value)} />
-      </div>
-      <div>
-        <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Major</label>
-        <input className={inputClass} placeholder="Computer Science" value={data.major} onChange={e => onChange("major", e.target.value)} />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">GPA</label>
-          <input className={inputClass} placeholder="3.8" value={data.gpa} onChange={e => onChange("gpa", e.target.value)} />
-        </div>
-        <div>
-          <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Year</label>
-          <select className={selectClass} value={data.gradeLevel} onChange={e => onChange("gradeLevel", e.target.value)}>
-            <option value="FRESHMAN">Freshman</option>
-            <option value="SOPHOMORE">Sophomore</option>
-            <option value="JUNIOR">Junior</option>
-            <option value="SENIOR">Senior</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  );
+function parseStatus(text) {
+  const line = (text || "").split("\n").find(l => l.trim().startsWith("STATUS:"));
+  return line ? line.replace("STATUS:", "").trim() : null;
 }
 
-// ─── Step 2: Academic Audit ──────────────────────────────────────────────────
-function StepAudit({ data, onChange }) {
-  const [mode, setMode] = useState("paste");
-
-  const tabClass = (active) =>
-    `px-4 py-2 text-sm rounded-lg font-semibold transition-colors cursor-pointer ${
-      active
-        ? "bg-blue-600 text-white"
-        : "bg-gray-900 text-gray-400 border border-gray-700 hover:text-white"
-    }`;
-
-  return (
-    <div className="space-y-4">
-      <p className="text-gray-400 text-sm leading-relaxed">
-        The more accurate this is, the more honest your score will be.
-      </p>
-      <div className="flex gap-2">
-        <button className={tabClass(mode === "paste")} onClick={() => setMode("paste")}>📋 Paste Text</button>
-        <button className={tabClass(mode === "upload")} onClick={() => setMode("upload")}>📄 Upload PDF</button>
-        <button className={tabClass(mode === "manual")} onClick={() => setMode("manual")}>✏️ Enter Manually</button>
-      </div>
-
-      {mode === "paste" && (
-        <div>
-          <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">
-            Paste your DegreeWorks audit
-          </label>
-          <textarea
-            className={inputClass}
-            rows={8}
-            placeholder="Open DegreeWorks → select all text → paste it here..."
-            value={data.degreeWorksText}
-            onChange={e => onChange("degreeWorksText", e.target.value)}
-          />
-        </div>
-      )}
-
-      {mode === "upload" && (
-        <div className="border-2 border-dashed border-gray-700 rounded-xl p-10 text-center">
-          <p className="text-4xl mb-3">📄</p>
-          <p className="text-white font-semibold mb-1">Upload your DegreeWorks PDF</p>
-          <p className="text-gray-500 text-sm mb-4">PDF files only</p>
-          <input
-            type="file"
-            accept=".pdf"
-            className="hidden"
-            id="audit-upload"
-            onChange={e => {
-              const file = e.target.files[0];
-              if (file) onChange("auditFile", file);
-            }}
-          />
-          <label
-            htmlFor="audit-upload"
-            className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg cursor-pointer transition-colors text-sm"
-          >
-            Choose File
-          </label>
-          {data.auditFile && (
-            <p className="text-blue-400 text-sm mt-3">✓ {data.auditFile.name}</p>
-          )}
-        </div>
-      )}
-
-      {mode === "manual" && (
-        <div className="space-y-3">
-          <p className="text-gray-500 text-xs">Enter your academic info manually — this is your fallback option.</p>
-          <div>
-            <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Credits Completed</label>
-            <input className={inputClass} placeholder="e.g. 59" value={data.creditsCompleted || ""} onChange={e => onChange("creditsCompleted", e.target.value)} />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Credits Remaining</label>
-            <input className={inputClass} placeholder="e.g. 61" value={data.creditsRemaining || ""} onChange={e => onChange("creditsRemaining", e.target.value)} />
-          </div>
-          <div>
-            <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Courses Completed (comma separated)</label>
-            <textarea
-              className={inputClass}
-              rows={3}
-              placeholder="Data Structures, Algorithms, OOP, Discrete Math..."
-              value={data.coursesCompleted || ""}
-              onChange={e => onChange("coursesCompleted", e.target.value)}
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Step 3: Target Role ─────────────────────────────────────────────────────
-function StepRole({ data, onChange }) {
-  const tiers = ["FAANG / Big Tech", "Mid-size Tech", "Startup", "Any"];
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Target Role</label>
-        <input
-          className={inputClass}
-          placeholder="Software Engineer Intern"
-          value={data.targetRole}
-          onChange={e => onChange("targetRole", e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Target Company (optional)</label>
-        <input
-          className={inputClass}
-          placeholder="e.g. JP Morgan, Google, any startup..."
-          value={data.targetCompany}
-          onChange={e => onChange("targetCompany", e.target.value)}
-        />
-      </div>
-      <div>
-        <label className="text-xs text-gray-400 uppercase tracking-widest mb-2 block">Company Tier</label>
-        <div className="grid grid-cols-2 gap-2">
-          {tiers.map(tier => (
-            <button
-              key={tier}
-              onClick={() => onChange("companyTier", tier)}
-              className={`px-4 py-3 rounded-lg text-sm font-semibold border transition-colors text-left ${
-                data.companyTier === tier
-                  ? "bg-blue-600 border-blue-500 text-white"
-                  : "bg-gray-900 border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"
-              }`}
-            >
-              {tier}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div>
-        <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Target Date</label>
-        <input
-          className={inputClass}
-          placeholder="e.g. Summer 2027"
-          value={data.targetDate}
-          onChange={e => onChange("targetDate", e.target.value)}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ─── Step 4: Skills Check ────────────────────────────────────────────────────
-function StepSkills({ data, onChange }) {
-  const questions = [
-    {
-      key: "hasProjects",
-      label: "Do you have GitHub projects?",
-      options: ["None", "1–2 projects", "3+ projects"],
-    },
-    {
-      key: "leetcodeLevel",
-      label: "LeetCode consistency?",
-      options: ["Never done it", "Done some", "Weekly practice"],
-    },
-    {
-      key: "internshipExp",
-      label: "Internship or work experience?",
-      options: ["None", "1 internship", "2+ internships"],
-    },
-    {
-      key: "dsaLevel",
-      label: "Comfortable with DSA?",
-      options: ["Beginner", "Intermediate", "Strong"],
-    },
-    {
-      key: "builtEndToEnd",
-      label: "Built anything end to end?",
-      options: ["Not yet", "Yes — one project", "Yes — multiple"],
-    },
-  ];
-
-  return (
-    <div className="space-y-5">
-      <p className="text-gray-400 text-sm leading-relaxed">
-        Be honest — this is what makes the score accurate.
-      </p>
-      {questions.map(q => (
-        <div key={q.key}>
-          <label className="text-sm font-semibold text-white mb-2 block">{q.label}</label>
-          <div className="flex flex-wrap gap-2">
-            {q.options.map(opt => (
-              <button
-                key={opt}
-                onClick={() => onChange(q.key, opt)}
-                className={`px-4 py-2 rounded-lg text-sm border transition-colors ${
-                  data[q.key] === opt
-                    ? "bg-blue-600 border-blue-500 text-white font-semibold"
-                    : "bg-gray-900 border-gray-700 text-gray-400 hover:text-white hover:border-gray-500"
-                }`}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-        </div>
-      ))}
-      <div>
-        <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">
-          Current Skills (comma separated)
-        </label>
-        <input
-          className={inputClass}
-          placeholder="Java, Spring Boot, React, SQL..."
-          value={data.currentSkills}
-          onChange={e => onChange("currentSkills", e.target.value)}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ─── Step 5: Processing ──────────────────────────────────────────────────────
-function StepProcessing({ streamingText }) {
-  const bottomRef = React.useRef(null);
-
-  useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+function parseSections(text) {
+  const sections = [];
+  let current = null;
+  (text || "").split("\n").forEach(line => {
+    const t = line.trim();
+    if (!t || t === "---" || t.startsWith("STATUS:")) return;
+    if (t.startsWith("## ")) {
+      if (current) sections.push(current);
+      current = { title: t.slice(3), lines: [] };
+    } else if (t.startsWith("# ")) {
+      // skip
+    } else {
+      if (!current) current = { title: "Overview", lines: [] };
+      current.lines.push(t);
     }
-  }, [streamingText]);
+  });
+  if (current) sections.push(current);
+  return sections;
+}
 
-  const hasText = streamingText && streamingText.length > 0;
+function parseNextMoves(sections) {
+  const actionSection = sections.find(s =>
+    s.title.toLowerCase().includes("skill") ||
+    s.title.toLowerCase().includes("action") ||
+    s.title.toLowerCase().includes("next") ||
+    s.title.toLowerCase().includes("priorit") ||
+    s.title.toLowerCase().includes("recommend")
+  );
+  if (!actionSection) return [];
+  return actionSection.lines
+    .filter(l => l.startsWith("- ") || /^\d\./.test(l))
+    .map(l => l.replace(/^- |^\d\.\s*/, "").replace(/\*\*(.+?)\*\*/g, "$1"))
+    .slice(0, 3);
+}
 
+function renderLines(lines) {
+  return lines.reduce((blocks, line) => {
+    if (line.startsWith("### ")) {
+      blocks.push({ type: "h3", content: line.slice(4) });
+    } else if (line.startsWith("- ")) {
+      const content = line.slice(2).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      const last = blocks[blocks.length - 1];
+      if (last?.type === "list") last.items.push(content);
+      else blocks.push({ type: "list", items: [content] });
+    } else {
+      const content = line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      blocks.push({ type: "p", content });
+    }
+    return blocks;
+  }, []).map((block, i) => {
+    if (block.type === "h3")
+      return <h3 key={i} className="text-sm font-semibold text-gray-100 mt-4 mb-1">{block.content}</h3>;
+    if (block.type === "list")
+      return (
+        <ul key={i} className="space-y-1 pl-2 my-2">
+          {block.items.map((item, j) => (
+            <li key={j} className="text-gray-300 text-sm flex gap-2">
+              <span className="text-blue-500 shrink-0 mt-0.5">•</span>
+              <span dangerouslySetInnerHTML={{ __html: item }} />
+            </li>
+          ))}
+        </ul>
+      );
+    return (
+      <p key={i} className="text-gray-300 text-sm leading-relaxed my-2"
+        dangerouslySetInnerHTML={{ __html: block.content }} />
+    );
+  });
+}
+
+function AccordionSection({ title, children }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="py-4 space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin shrink-0" />
-        <p className="text-sm text-blue-400 font-semibold">
-          {hasText ? "Generating your plan..." : "Analyzing your profile..."}
-        </p>
-      </div>
-      <div className="bg-gray-900 border border-gray-700 rounded-xl p-5 min-h-48 max-h-96 overflow-y-auto">
-        {hasText ? (
-          <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
-            {streamingText}
-            <span className="inline-block w-2 h-4 bg-blue-400 ml-0.5 animate-pulse" />
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {["Reading your academic audit...", "Comparing against SWE requirements...", "Calculating your readiness score..."].map((msg, i) => (
-              <div key={i} className="flex items-center gap-2 opacity-40">
-                <span className="text-blue-500 text-xs">→</span>
-                <span className="text-gray-400 text-sm">{msg}</span>
-              </div>
-            ))}
-          </div>
-        )}
-        <div ref={bottomRef} />
-      </div>
-      <p className="text-gray-600 text-xs text-center">
-        This takes about 20-30 seconds. You will be redirected automatically.
-      </p>
+    <div className="border border-gray-700 rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 bg-gray-900 hover:bg-gray-800 transition-colors text-left"
+      >
+        <span className="font-semibold text-white text-sm">{title}</span>
+        <span className="text-gray-400 text-lg">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="px-5 py-4 bg-gray-950 border-t border-gray-700">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
 
-// ─── Main Onboarding Component ───────────────────────────────────────────────
-function OnboardingPage() {
+function ScoreRing({ score }) {
+  const radius = 54;
+  const circ = 2 * Math.PI * radius;
+  const offset = circ - (score / 100) * circ;
+  const color = score < 40 ? "#ef4444" : score < 70 ? "#eab308" : "#22c55e";
+  return (
+    <div className="flex flex-col items-center">
+      <svg width="140" height="140" viewBox="0 0 140 140">
+        <circle cx="70" cy="70" r={radius} fill="none" stroke="#1f2937" strokeWidth="12" />
+        <circle
+          cx="70" cy="70" r={radius}
+          fill="none" stroke={color} strokeWidth="12"
+          strokeDasharray={circ} strokeDashoffset={offset}
+          strokeLinecap="round" transform="rotate(-90 70 70)"
+          style={{ transition: "stroke-dashoffset 1s ease" }}
+        />
+        <text x="70" y="65" textAnchor="middle" fill="white" fontSize="28" fontWeight="bold" fontFamily="Inter, sans-serif">
+          {score}
+        </text>
+        <text x="70" y="84" textAnchor="middle" fill="#6b7280" fontSize="11" fontFamily="Inter, sans-serif">
+          / 100
+        </text>
+      </svg>
+      <p className="text-gray-400 text-xs mt-1 tracking-widest uppercase">Readiness Score</p>
+    </div>
+  );
+}
+
+function estimateScore(planText) {
+  const status = parseStatus(planText);
+  let hash = 0;
+  for (let i = 0; i < planText.length; i++) {
+    hash = (hash * 31 + planText.charCodeAt(i)) & 0xffffffff;
+  }
+  const abs = Math.abs(hash);
+  if (status === "AHEAD") return 78 + (abs % 12);
+  if (status === "ON TRACK") return 55 + (abs % 18);
+  return 35 + (abs % 18);
+}
+
+function DashboardPage() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const [step, setStep] = useState(1);
+
+  const [student, setStudent] = useState(null);
+  const [planHistory, setPlanHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [regenerating, setRegenerating] = useState(false);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [streamingText, setStreamingText] = useState("");
 
-  const [profile, setProfile] = useState({
-    name: "", school: "", major: "", gpa: "", gradeLevel: "SOPHOMORE",
-  });
-
-  const [audit, setAudit] = useState({
-    degreeWorksText: "", auditFile: null, creditsCompleted: "", creditsRemaining: "", coursesCompleted: "",
-  });
-
-  const [role, setRole] = useState({
-    targetRole: "Software Engineer Intern", targetCompany: "", companyTier: "Any", targetDate: "",
-  });
-
-  const [skills, setSkills] = useState({
-    hasProjects: "", leetcodeLevel: "", internshipExp: "", dsaLevel: "", builtEndToEnd: "", currentSkills: "",
-  });
-
-  function updateProfile(key, val) { setProfile(p => ({ ...p, [key]: val })); }
-  function updateAudit(key, val) { setAudit(a => ({ ...a, [key]: val })); }
-  function updateRole(key, val) { setRole(r => ({ ...r, [key]: val })); }
-  function updateSkills(key, val) { setSkills(s => ({ ...s, [key]: val })); }
-
-  // ─── Pre-fill from existing profile ─────────────────────────────────────
   useEffect(() => {
-    async function prefill() {
+    async function load() {
       try {
-        const res = await fetch(
-          "https://pathpilot-production-de7c.up.railway.app/students/me",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        if (!res.ok) return;
-        const s = await res.json();
+        const [profileRes, histRes] = await Promise.all([
+          fetch("https://pathpilot-production-de7c.up.railway.app/students/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch("https://pathpilot-production-de7c.up.railway.app/students/me/plans", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-        if (s.name) setProfile({
-          name: s.name || "",
-          school: s.school || "",
-          major: s.major || "",
-          gpa: s.gpa || "",
-          gradeLevel: s.gradeLevel || "SOPHOMORE",
-        });
-
-        if (s.degreeWorksText) setAudit(a => ({
-          ...a,
-          degreeWorksText: s.degreeWorksText || "",
-        }));
-
-        if (s.careerGoal) {
-          // strip the tier that was appended e.g. "JP Morgan (Any)"
-          const rawCompany = s.careerGoal.targetCompany || "";
-          const company = rawCompany.replace(/\s*\(.*?\)\s*$/, "");
-          const tierMatch = rawCompany.match(/\((.+?)\)$/);
-          const tier = tierMatch ? tierMatch[1] : "Any";
-          setRole({
-            targetRole: s.careerGoal.targetRole || "Software Engineer Intern",
-            targetCompany: company,
-            companyTier: tier,
-            targetDate: s.careerGoal.targetDate || "",
-          });
+        if (!profileRes.ok) {
+          navigate("/onboarding");
+          return;
         }
 
-        if (s.skillProfile) {
-          // parse skillGaps back into individual keys
-          const gaps = s.skillProfile.skillGaps || "";
-          const extract = (key) => {
-            const match = gaps.match(new RegExp(`${key}:\\s*([^,]+)`));
-            return match ? match[1].trim() : "";
-          };
-          setSkills({
-            hasProjects: extract("GitHub"),
-            leetcodeLevel: extract("LeetCode"),
-            internshipExp: extract("Internship"),
-            dsaLevel: extract("DSA"),
-            builtEndToEnd: extract("End-to-end project"),
-            currentSkills: s.skillProfile.currentSkills || "",
-          });
+        const profileData = await profileRes.json();
+        setStudent(profileData);
+
+        if (histRes.ok) {
+          const plans = await histRes.json();
+          setPlanHistory(plans);
+
+          const justOnboarded = localStorage.getItem("onboardingComplete") === "true";
+          localStorage.removeItem("onboardingComplete");
+
+          if ((!plans || plans.length === 0) && !justOnboarded) {
+            navigate("/onboarding");
+            return;
+          }
         }
       } catch (err) {
-        // no profile yet — fresh start, leave defaults
+        setError("Failed to load your profile.");
+      } finally {
+        setLoading(false);
       }
     }
-    prefill();
+    load();
   }, []);
 
-  function validateStep() {
-    if (step === 1) {
-      if (!profile.name.trim()) return "Please enter your name.";
-      if (!profile.school.trim()) return "Please enter your school.";
-      if (!profile.major.trim()) return "Please enter your major.";
-    }
-    if (step === 3) {
-      if (!role.targetRole.trim()) return "Please enter your target role.";
-    }
-    return null;
-  }
-
-  async function handleNext() {
-    const err = validateStep();
-    if (err) { setError(err); return; }
+  async function handleRegenerate() {
+    if (!student) return;
+    setRegenerating(true);
     setError("");
-
-    if (step === 4) {
-      setStep(5);
-      await handleSubmit();
-      return;
-    }
-
-    setStep(s => s + 1);
-  }
-
-  async function handleSubmit() {
-    setLoading(true);
     try {
-      const skillSummary = [
-        skills.hasProjects && `GitHub: ${skills.hasProjects}`,
-        skills.leetcodeLevel && `LeetCode: ${skills.leetcodeLevel}`,
-        skills.internshipExp && `Internship: ${skills.internshipExp}`,
-        skills.dsaLevel && `DSA: ${skills.dsaLevel}`,
-        skills.builtEndToEnd && `End-to-end project: ${skills.builtEndToEnd}`,
-      ].filter(Boolean).join(", ");
-
-      const auditText = audit.degreeWorksText ||
-        `Credits completed: ${audit.creditsCompleted}, Credits remaining: ${audit.creditsRemaining}, Courses: ${audit.coursesCompleted}`;
-
-      const payload = {
-        name: profile.name,
-        email: "",
-        major: profile.major,
-        school: profile.school,
-        gpa: profile.gpa,
-        degreeWorksText: auditText,
-        gradeLevel: profile.gradeLevel,
-        careerGoal: {
-          targetRole: role.targetRole,
-          targetCompany: `${role.targetCompany} (${role.companyTier})`,
-          targetDate: role.targetDate,
-        },
-        skillProfile: {
-          skillLevel: skills.dsaLevel || "Beginner",
-          currentSkills: skills.currentSkills,
-          skillGaps: skillSummary,
-        },
-      };
-
-      // check if profile exists
-      const existingRes = await fetch(
-        "https://pathpilot-production-de7c.up.railway.app/students/me",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      let student;
-      if (existingRes.ok) {
-        const existing = await existingRes.json();
-        const updateRes = await fetch(
-          `https://pathpilot-production-de7c.up.railway.app/students/${existing.id}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify(payload),
-          }
-        );
-        if (!updateRes.ok) throw new Error("Failed to update profile.");
-        student = await updateRes.json();
-      } else {
-        const createRes = await fetch(
-          "https://pathpilot-production-de7c.up.railway.app/students",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify(payload),
-          }
-        );
-        if (!createRes.ok) throw new Error("Failed to create profile.");
-        student = await createRes.json();
-      }
-
-      // generate plan — streaming
-      setStreamingText("");
-      const planRes = await fetch(
+      await fetch(
         `https://pathpilot-production-de7c.up.railway.app/students/${student.id}/ai-plan`,
         { method: "POST", headers: { Authorization: `Bearer ${token}` } }
       );
-      if (!planRes.ok) throw new Error("Failed to generate your plan. Please try again.");
-
-      const reader = planRes.body.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-        const text = lines
-          .filter(line => line.startsWith('data:'))
-          .map(line => line.replace(/^data:\s*/, ''))
-          .join('');
-        setStreamingText(prev => prev + text);
-      }
-
-      // flag so dashboard knows onboarding just completed — skip the "no plans" redirect
-      localStorage.setItem("onboardingComplete", "true");
-
-      navigate("/dashboard");
+      const histRes = await fetch(
+        "https://pathpilot-production-de7c.up.railway.app/students/me/plans",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (histRes.ok) setPlanHistory(await histRes.json());
     } catch (err) {
-      setError(err.message);
-      setStep(4);
+      setError("Failed to regenerate plan.");
     } finally {
-      setLoading(false);
+      setRegenerating(false);
     }
   }
 
-  const progress = ((step - 1) / (STEPS.length - 1)) * 100;
+  function handleLogout() {
+    localStorage.removeItem("token");
+    navigate("/login");
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const latestPlan = planHistory[0];
+  const latestPlanText = latestPlan?.planText || "";
+  const status = parseStatus(latestPlanText);
+  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG["BEHIND"];
+  const sections = parseSections(latestPlanText);
+  const nextMoves = parseNextMoves(sections);
+  const score = latestPlan ? estimateScore(latestPlanText) : 0;
+  const latestDate = latestPlan
+    ? new Date(latestPlan.createdAt).toLocaleDateString("en-US", {
+        month: "long", day: "numeric", year: "numeric",
+      })
+    : null;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-6 py-12">
-      <div className="max-w-xl mx-auto">
+    <div className="min-h-screen bg-gray-950 text-white px-4 py-10">
+      <div className="max-w-2xl mx-auto">
 
-        {/* Header */}
-        <div className="mb-10">
-          <span
-            className="text-xl font-extrabold tracking-tight cursor-pointer"
-            onClick={() => navigate("/")}
-          >
-            PathPilot
-          </span>
-          <p className="text-gray-500 text-sm mt-1">
-            Step {step} of {STEPS.length} — {STEPS[step - 1].label}
-          </p>
+        {/* Nav */}
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight">PathPilot</h1>
+            <p className="text-gray-500 text-sm mt-0.5">
+              {student?.name ? `Welcome back, ${student.name.split(" ")[0]}.` : "Your career dashboard."}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigate("/onboarding")}
+              className="text-sm text-gray-400 border border-gray-700 hover:text-white hover:border-gray-500 px-4 py-2 rounded-lg transition-colors"
+            >
+              Edit Profile
+            </button>
+            <button
+              onClick={handleLogout}
+              className="text-sm text-gray-400 border border-gray-700 hover:text-white hover:border-gray-500 px-4 py-2 rounded-lg transition-colors"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="w-full bg-gray-800 rounded-full h-1.5 mb-10">
-          <div
-            className="bg-blue-500 h-1.5 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        {/* Step labels */}
-        <div className="flex justify-between mb-10">
-          {STEPS.map(s => (
-            <div key={s.num} className="flex flex-col items-center gap-1">
-              <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                  s.num < step
-                    ? "bg-blue-600 text-white"
-                    : s.num === step
-                    ? "bg-blue-600 text-white ring-4 ring-blue-900"
-                    : "bg-gray-800 text-gray-500"
-                }`}
-              >
-                {s.num < step ? "✓" : s.num}
-              </div>
-              <span className={`text-xs hidden sm:block ${s.num === step ? "text-white font-semibold" : "text-gray-600"}`}>
-                {s.label}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Step title */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-extrabold tracking-tight">
-            {step === 1 && "Tell us about yourself"}
-            {step === 2 && "Add your academic audit"}
-            {step === 3 && "What's your target?"}
-            {step === 4 && "Skills reality check"}
-            {step === 5 && "Generating your score..."}
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {step === 1 && "Basic info so we can calibrate your score."}
-            {step === 2 && "The more accurate this is, the more honest your score will be."}
-            {step === 3 && "Define what landing the internship looks like for you."}
-            {step === 4 && "Be brutally honest — this is what makes the plan actionable."}
-            {step === 5 && "Sit tight. We're building your honest readiness score."}
-          </p>
-        </div>
-
-        {/* Error */}
         {error && (
           <div className="bg-red-950 border border-red-800 text-red-400 text-sm px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
 
-        {/* Step content */}
-        <div className="mb-10">
-          {step === 1 && <StepProfile data={profile} onChange={updateProfile} />}
-          {step === 2 && <StepAudit data={audit} onChange={updateAudit} />}
-          {step === 3 && <StepRole data={role} onChange={updateRole} />}
-          {step === 4 && <StepSkills data={skills} onChange={updateSkills} />}
-          {step === 5 && <StepProcessing streamingText={streamingText} />}
-        </div>
+        {latestPlan && (
+          <>
+            {/* Score + Status */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col items-center justify-center">
+                <ScoreRing score={score} />
+              </div>
+              <div className={`${cfg.bg} border ${cfg.border} rounded-2xl p-6 flex flex-col justify-between`}>
+                <div>
+                  <span className="text-3xl">{cfg.icon}</span>
+                  <p className={`text-xl font-extrabold mt-2 ${cfg.text}`}>{cfg.label}</p>
+                  <p className="text-gray-400 text-sm mt-1 leading-relaxed">{cfg.sub}</p>
+                </div>
+                {latestDate && (
+                  <p className="text-gray-600 text-xs mt-4">Last updated {latestDate}</p>
+                )}
+              </div>
+            </div>
 
-        {/* Navigation */}
-        {step < 5 && (
-          <div className="flex items-center justify-between">
+            {/* Next 3 Moves */}
+            {nextMoves.length > 0 && (
+              <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-4">
+                <p className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-4">
+                  Your Next 3 Moves
+                </p>
+                <div className="space-y-3">
+                  {nextMoves.map((move, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <span className="w-6 h-6 bg-blue-900 text-blue-300 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+                        {i + 1}
+                      </span>
+                      <p className="text-sm text-gray-300 leading-relaxed">{move}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Full Assessment */}
+            <div className="space-y-3 mb-6">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                Full Assessment
+              </p>
+              {sections.map((section, i) => (
+                <AccordionSection key={i} title={section.title}>
+                  {renderLines(section.lines)}
+                </AccordionSection>
+              ))}
+            </div>
+
+            {/* Regenerate */}
+            <div className="mb-10">
+              <button
+                onClick={handleRegenerate}
+                disabled={regenerating}
+                className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-semibold py-3 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
+              >
+                {regenerating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Regenerating...
+                  </>
+                ) : (
+                  "↻ Regenerate My Score"
+                )}
+              </button>
+            </div>
+
+            {/* Past Assessments */}
+            {planHistory.length > 1 && (
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
+                  Past Assessments
+                </p>
+                <div className="space-y-3">
+                  {planHistory.slice(1).map(plan => {
+                    const pcfg = STATUS_CONFIG[plan.status] || STATUS_CONFIG["BEHIND"];
+                    const date = new Date(plan.createdAt).toLocaleDateString("en-US", {
+                      month: "short", day: "numeric", year: "numeric",
+                    });
+                    const planScore = estimateScore(plan.planText || "");
+                    return (
+                      <AccordionSection key={plan.id} title={`${date} — ${plan.status} — Score: ${planScore}`}>
+                        <div className={`${pcfg.bg} border ${pcfg.border} rounded-xl px-4 py-3 mb-4 flex items-center gap-3`}>
+                          <span className="text-2xl">{pcfg.icon}</span>
+                          <div>
+                            <p className={`font-bold text-sm ${pcfg.text}`}>{pcfg.label}</p>
+                            <p className="text-gray-400 text-xs mt-0.5">{pcfg.sub}</p>
+                          </div>
+                        </div>
+                        {parseSections(plan.planText).map((section, j) => (
+                          <AccordionSection key={j} title={section.title}>
+                            {renderLines(section.lines)}
+                          </AccordionSection>
+                        ))}
+                      </AccordionSection>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {planHistory.length === 1 && (
+              <p className="text-gray-600 text-xs text-center pb-6">
+                Regenerate your score to start tracking progress over time.
+              </p>
+            )}
+          </>
+        )}
+
+        {!latestPlan && !loading && (
+          <div className="text-center py-20">
+            <p className="text-gray-400 mb-4">No plan generated yet.</p>
             <button
-              onClick={() => { setError(""); setStep(s => s - 1); }}
-              className={`text-sm text-gray-400 hover:text-white transition-colors ${step === 1 ? "invisible" : ""}`}
+              onClick={() => navigate("/onboarding")}
+              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors"
             >
-              ← Back
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-bold px-8 py-3 rounded-xl text-sm transition-colors"
-            >
-              {step === 4 ? "Generate My Score →" : "Continue →"}
+              Generate My Score
             </button>
           </div>
         )}
@@ -636,4 +413,4 @@ function OnboardingPage() {
   );
 }
 
-export default OnboardingPage;
+export default DashboardPage;

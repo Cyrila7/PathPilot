@@ -444,8 +444,9 @@ function OnboardingPage() {
 
         // ← backend sends [DONE] when plan is saved — navigate immediately
         if (chunk.includes("[DONE]")) {
+          console.log("DONE received, redirecting...");
           localStorage.setItem("onboardingComplete", "true");
-          navigate("/dashboard");
+          window.location.replace("/dashboard");
           return;
         }
 
