@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const FONT = { fontFamily: "Georgia, 'Times New Roman', Times, serif" };
-
 const STEPS = [
   { num: 1, label: "Your Profile" },
   { num: 2, label: "Academic Audit" },
@@ -17,7 +15,6 @@ const inputClass =
 const selectClass =
   "w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-sm";
 
-// ─── Step 1: Profile ────────────────────────────────────────────────────────
 function StepProfile({ data, onChange }) {
   return (
     <div className="space-y-4">
@@ -52,15 +49,12 @@ function StepProfile({ data, onChange }) {
   );
 }
 
-// ─── Step 2: Academic Audit ──────────────────────────────────────────────────
 function StepAudit({ data, onChange }) {
   const [mode, setMode] = useState("paste");
 
   const tabClass = (active) =>
     `px-4 py-2 text-sm rounded-lg font-semibold transition-colors cursor-pointer ${
-      active
-        ? "bg-blue-600 text-white"
-        : "bg-gray-900 text-gray-400 border border-gray-700 hover:text-white"
+      active ? "bg-blue-600 text-white" : "bg-gray-900 text-gray-400 border border-gray-700 hover:text-white"
     }`;
 
   return (
@@ -76,9 +70,7 @@ function StepAudit({ data, onChange }) {
 
       {mode === "paste" && (
         <div>
-          <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">
-            Paste your DegreeWorks audit
-          </label>
+          <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Paste your DegreeWorks audit</label>
           <textarea
             className={inputClass}
             rows={8}
@@ -104,15 +96,10 @@ function StepAudit({ data, onChange }) {
               if (file) onChange("auditFile", file);
             }}
           />
-          <label
-            htmlFor="audit-upload"
-            className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg cursor-pointer transition-colors text-sm"
-          >
+          <label htmlFor="audit-upload" className="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg cursor-pointer transition-colors text-sm">
             Choose File
           </label>
-          {data.auditFile && (
-            <p className="text-blue-400 text-sm mt-3">✓ {data.auditFile.name}</p>
-          )}
+          {data.auditFile && <p className="text-blue-400 text-sm mt-3">✓ {data.auditFile.name}</p>}
         </div>
       )}
 
@@ -143,7 +130,6 @@ function StepAudit({ data, onChange }) {
   );
 }
 
-// ─── Step 3: Target Role ─────────────────────────────────────────────────────
 function StepRole({ data, onChange }) {
   const tiers = ["FAANG / Big Tech", "Mid-size Tech", "Startup", "Any"];
 
@@ -151,21 +137,11 @@ function StepRole({ data, onChange }) {
     <div className="space-y-4">
       <div>
         <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Target Role</label>
-        <input
-          className={inputClass}
-          placeholder="Software Engineer Intern"
-          value={data.targetRole}
-          onChange={e => onChange("targetRole", e.target.value)}
-        />
+        <input className={inputClass} placeholder="Software Engineer Intern" value={data.targetRole} onChange={e => onChange("targetRole", e.target.value)} />
       </div>
       <div>
         <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Target Company (optional)</label>
-        <input
-          className={inputClass}
-          placeholder="e.g. JP Morgan, Google, any startup..."
-          value={data.targetCompany}
-          onChange={e => onChange("targetCompany", e.target.value)}
-        />
+        <input className={inputClass} placeholder="e.g. JP Morgan, Google, any startup..." value={data.targetCompany} onChange={e => onChange("targetCompany", e.target.value)} />
       </div>
       <div>
         <label className="text-xs text-gray-400 uppercase tracking-widest mb-2 block">Company Tier</label>
@@ -187,52 +163,24 @@ function StepRole({ data, onChange }) {
       </div>
       <div>
         <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Target Date</label>
-        <input
-          className={inputClass}
-          placeholder="e.g. Summer 2027"
-          value={data.targetDate}
-          onChange={e => onChange("targetDate", e.target.value)}
-        />
+        <input className={inputClass} placeholder="e.g. Summer 2027" value={data.targetDate} onChange={e => onChange("targetDate", e.target.value)} />
       </div>
     </div>
   );
 }
 
-// ─── Step 4: Skills Check ────────────────────────────────────────────────────
 function StepSkills({ data, onChange }) {
   const questions = [
-    {
-      key: "hasProjects",
-      label: "Do you have GitHub projects?",
-      options: ["None", "1–2 projects", "3+ projects"],
-    },
-    {
-      key: "leetcodeLevel",
-      label: "LeetCode consistency?",
-      options: ["Never done it", "Done some", "Weekly practice"],
-    },
-    {
-      key: "internshipExp",
-      label: "Internship or work experience?",
-      options: ["None", "1 internship", "2+ internships"],
-    },
-    {
-      key: "dsaLevel",
-      label: "Comfortable with DSA?",
-      options: ["Beginner", "Intermediate", "Strong"],
-    },
-    {
-      key: "builtEndToEnd",
-      label: "Built anything end to end?",
-      options: ["Not yet", "Yes — one project", "Yes — multiple"],
-    },
+    { key: "hasProjects", label: "Do you have GitHub projects?", options: ["None", "1–2 projects", "3+ projects"] },
+    { key: "leetcodeLevel", label: "LeetCode consistency?", options: ["Never done it", "Done some", "Weekly practice"] },
+    { key: "internshipExp", label: "Internship or work experience?", options: ["None", "1 internship", "2+ internships"] },
+    { key: "dsaLevel", label: "Comfortable with DSA?", options: ["Beginner", "Intermediate", "Strong"] },
+    { key: "builtEndToEnd", label: "Built anything end to end?", options: ["Not yet", "Yes — one project", "Yes — multiple"] },
   ];
 
   return (
     <div className="space-y-5">
-      <p className="text-gray-400 text-sm leading-relaxed">
-        Be honest — this is what makes the score accurate.
-      </p>
+      <p className="text-gray-400 text-sm leading-relaxed">Be honest — this is what makes the score accurate.</p>
       {questions.map(q => (
         <div key={q.key}>
           <label className="text-sm font-semibold text-white mb-2 block">{q.label}</label>
@@ -254,21 +202,13 @@ function StepSkills({ data, onChange }) {
         </div>
       ))}
       <div>
-        <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">
-          Current Skills (comma separated)
-        </label>
-        <input
-          className={inputClass}
-          placeholder="Java, Spring Boot, React, SQL..."
-          value={data.currentSkills}
-          onChange={e => onChange("currentSkills", e.target.value)}
-        />
+        <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Current Skills (comma separated)</label>
+        <input className={inputClass} placeholder="Java, Spring Boot, React, SQL..." value={data.currentSkills} onChange={e => onChange("currentSkills", e.target.value)} />
       </div>
     </div>
   );
 }
 
-// ─── Step 5: Processing ──────────────────────────────────────────────────────
 function StepProcessing({ streamingText }) {
   const bottomRef = React.useRef(null);
 
@@ -313,7 +253,6 @@ function StepProcessing({ streamingText }) {
   );
 }
 
-// ─── Main Onboarding Component ───────────────────────────────────────────────
 function OnboardingPage() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -343,7 +282,6 @@ function OnboardingPage() {
   function updateRole(key, val) { setRole(r => ({ ...r, [key]: val })); }
   function updateSkills(key, val) { setSkills(s => ({ ...s, [key]: val })); }
 
-  // ─── Pre-fill from existing profile ─────────────────────────────────────
   useEffect(() => {
     async function prefill() {
       try {
@@ -362,13 +300,9 @@ function OnboardingPage() {
           gradeLevel: s.gradeLevel || "SOPHOMORE",
         });
 
-        if (s.degreeWorksText) setAudit(a => ({
-          ...a,
-          degreeWorksText: s.degreeWorksText || "",
-        }));
+        if (s.degreeWorksText) setAudit(a => ({ ...a, degreeWorksText: s.degreeWorksText || "" }));
 
         if (s.careerGoal) {
-          // strip the tier that was appended e.g. "JP Morgan (Any)"
           const rawCompany = s.careerGoal.targetCompany || "";
           const company = rawCompany.replace(/\s*\(.*?\)\s*$/, "");
           const tierMatch = rawCompany.match(/\((.+?)\)$/);
@@ -382,7 +316,6 @@ function OnboardingPage() {
         }
 
         if (s.skillProfile) {
-          // parse skillGaps back into individual keys
           const gaps = s.skillProfile.skillGaps || "";
           const extract = (key) => {
             const match = gaps.match(new RegExp(`${key}:\\s*([^,]+)`));
@@ -398,7 +331,7 @@ function OnboardingPage() {
           });
         }
       } catch (err) {
-        // no profile yet — fresh start, leave defaults
+        // no profile yet
       }
     }
     prefill();
@@ -420,13 +353,11 @@ function OnboardingPage() {
     const err = validateStep();
     if (err) { setError(err); return; }
     setError("");
-
     if (step === 4) {
       setStep(5);
       await handleSubmit();
       return;
     }
-
     setStep(s => s + 1);
   }
 
@@ -464,7 +395,6 @@ function OnboardingPage() {
         },
       };
 
-      // check if profile exists
       const existingRes = await fetch(
         "https://pathpilot-production-de7c.up.railway.app/students/me",
         { headers: { Authorization: `Bearer ${token}` } }
@@ -496,7 +426,7 @@ function OnboardingPage() {
         student = await createRes.json();
       }
 
-      // generate plan — streaming
+      // ─── Streaming ───────────────────────────────────────────────
       setStreamingText("");
       const planRes = await fetch(
         `https://pathpilot-production-de7c.up.railway.app/students/${student.id}/ai-plan`,
@@ -505,28 +435,32 @@ function OnboardingPage() {
       if (!planRes.ok) throw new Error("Failed to generate your plan. Please try again.");
 
       const reader = planRes.body.getReader();
-            const decoder = new TextDecoder();
+      const decoder = new TextDecoder();
 
-            try {
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
-                const text = lines
-                  .filter(line => line.startsWith('data:'))
-                  .map(line => line.replace(/^data:\s*/, ''))
-                  .join('');
-                setStreamingText(prev => prev + text);
-              }
-            } catch (streamErr) {
-              // stream closed — plan was already saved on backend
-              console.log("Stream closed:", streamErr);
-            }
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
 
-            // always redirect regardless of how stream ended
-            localStorage.setItem("onboardingComplete", "true");
-            setTimeout(() => navigate("/dashboard"), 100);
+        // ← backend sends [DONE] when plan is saved — navigate immediately
+        if (chunk.includes("[DONE]")) {
+          localStorage.setItem("onboardingComplete", "true");
+          navigate("/dashboard");
+          return;
+        }
+
+        const lines = chunk.split('\n');
+        const text = lines
+          .filter(line => line.startsWith('data:'))
+          .map(line => line.replace(/^data:\s*/, ''))
+          .join('');
+        if (text) setStreamingText(prev => prev + text);
+      }
+
+      // fallback redirect if [DONE] was missed
+      localStorage.setItem("onboardingComplete", "true");
+      navigate("/dashboard");
+
     } catch (err) {
       setError(err.message);
       setStep(4);
@@ -541,12 +475,8 @@ function OnboardingPage() {
     <div className="min-h-screen bg-gray-950 text-white px-6 py-12">
       <div className="max-w-xl mx-auto">
 
-        {/* Header */}
         <div className="mb-10">
-          <span
-            className="text-xl font-extrabold tracking-tight cursor-pointer"
-            onClick={() => navigate("/")}
-          >
+          <span className="text-xl font-extrabold tracking-tight cursor-pointer" onClick={() => navigate("/")}>
             PathPilot
           </span>
           <p className="text-gray-500 text-sm mt-1">
@@ -554,27 +484,16 @@ function OnboardingPage() {
           </p>
         </div>
 
-        {/* Progress bar */}
         <div className="w-full bg-gray-800 rounded-full h-1.5 mb-10">
-          <div
-            className="bg-blue-500 h-1.5 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
+          <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
         </div>
 
-        {/* Step labels */}
         <div className="flex justify-between mb-10">
           {STEPS.map(s => (
             <div key={s.num} className="flex flex-col items-center gap-1">
-              <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                  s.num < step
-                    ? "bg-blue-600 text-white"
-                    : s.num === step
-                    ? "bg-blue-600 text-white ring-4 ring-blue-900"
-                    : "bg-gray-800 text-gray-500"
-                }`}
-              >
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                s.num < step ? "bg-blue-600 text-white" : s.num === step ? "bg-blue-600 text-white ring-4 ring-blue-900" : "bg-gray-800 text-gray-500"
+              }`}>
                 {s.num < step ? "✓" : s.num}
               </div>
               <span className={`text-xs hidden sm:block ${s.num === step ? "text-white font-semibold" : "text-gray-600"}`}>
@@ -584,7 +503,6 @@ function OnboardingPage() {
           ))}
         </div>
 
-        {/* Step title */}
         <div className="mb-8">
           <h1 className="text-2xl font-extrabold tracking-tight">
             {step === 1 && "Tell us about yourself"}
@@ -602,14 +520,12 @@ function OnboardingPage() {
           </p>
         </div>
 
-        {/* Error */}
         {error && (
           <div className="bg-red-950 border border-red-800 text-red-400 text-sm px-4 py-3 rounded-lg mb-6">
             {error}
           </div>
         )}
 
-        {/* Step content */}
         <div className="mb-10">
           {step === 1 && <StepProfile data={profile} onChange={updateProfile} />}
           {step === 2 && <StepAudit data={audit} onChange={updateAudit} />}
@@ -618,7 +534,6 @@ function OnboardingPage() {
           {step === 5 && <StepProcessing streamingText={streamingText} />}
         </div>
 
-        {/* Navigation */}
         {step < 5 && (
           <div className="flex items-center justify-between">
             <button
