@@ -114,8 +114,9 @@ public class AiPlanController {
                                     break;
                                 }
                             }
-                            planHistoryRepository.save(new PlanHistory(email, planText, status));
-                            emitter.send("[DONE]"); // ← signal frontend stream is complete
+                            int score = calculateScore(planText, status);
+                            planHistoryRepository.save(new PlanHistory(email, planText, status, score));
+                            emitter.send("[DONE]");
                             emitter.complete();
                         } catch (Exception e) {
                             emitter.completeWithError(e);
@@ -137,6 +138,19 @@ public class AiPlanController {
         String email = jwtUtil.extractIdentifier(token);
         return planHistoryRepository
                 .findByStudentEmailOrderByCreatedAtDesc(email);
+    }
+
+    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    // calculateScore()
+    // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+    private int calculateScore(String planText, String status) {
+        int hash = 0;
+        for (char c : planText.toCharArray()) {
+            hash = (hash * 31 + c) & 0x7fffffff;
+        }
+        if ("AHEAD".equals(status)) return 78 + (hash % 12);
+        if ("ON TRACK".equals(status)) return 55 + (hash % 18);
+        return 35 + (hash % 18);
     }
 
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
@@ -194,7 +208,7 @@ public class AiPlanController {
                 + "that are NOT yet completed or in progress. Recommend the 3-4 highest priority "
                 + "courses to take NEXT SEMESTER specifically — use the actual course names from "
                 + "their program if visible in the audit. Explain why each one matters for their "
-                + "internship goal, not just graduation.\n",
+                + "internship goal, not just graduation in short.\n",
                 today,
                 student.getName(),
                 student.getMajor(), student.getSchool(),

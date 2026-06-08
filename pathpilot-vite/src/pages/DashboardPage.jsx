@@ -245,7 +245,7 @@ function DashboardPage() {
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG["BEHIND"];
   const sections = parseSections(latestPlanText);
   const nextMoves = parseNextMoves(sections);
-  const score = latestPlan ? estimateScore(latestPlanText) : 0;
+  const score = latestPlan?.score || estimateScore(latestPlanText);
   const latestDate = latestPlan
     ? new Date(latestPlan.createdAt).toLocaleDateString("en-US", {
         month: "long", day: "numeric", year: "numeric",
