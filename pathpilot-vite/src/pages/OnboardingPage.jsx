@@ -446,7 +446,7 @@ function OnboardingPage() {
         if (chunk.includes("[DONE]")) {
           console.log("DONE received, redirecting...");
           localStorage.setItem("onboardingComplete", "true");
-          window.location.replace = ("/dashboard");
+          window.location.replace("/dashboard");
           return;
         }
 
