@@ -107,6 +107,8 @@ public class AiPlanController {
                     () -> {
                         try {
                             String planText = fullText.toString();
+
+                            // Parse status from first line
                             String status = "UNKNOWN";
                             for (String line : planText.split("\n")) {
                                 if (line.trim().startsWith("STATUS:")) {
@@ -114,8 +116,11 @@ public class AiPlanController {
                                     break;
                                 }
                             }
+
+                            // Calculate score and persist to DB
                             int score = calculateScore(planText, status);
                             planHistoryRepository.save(new PlanHistory(email, planText, status, score));
+
                             emitter.send("[DONE]");
                             emitter.complete();
                         } catch (Exception e) {
@@ -136,12 +141,11 @@ public class AiPlanController {
     ) {
         String token = authHeader.replace("Bearer ", "");
         String email = jwtUtil.extractIdentifier(token);
-        return planHistoryRepository
-                .findByStudentEmailOrderByCreatedAtDesc(email);
+        return planHistoryRepository.findByStudentEmailOrderByCreatedAtDesc(email);
     }
 
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-    // calculateScore()
+    // calculateScore() — deterministic, stored in DB on save
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     private int calculateScore(String planText, String status) {
         int hash = 0;
@@ -178,7 +182,8 @@ public class AiPlanController {
                 ? student.getSkillProfile().getSkillGaps() : "Not set";
 
         return String.format(
-                "You are PathPilot — brutally honest career advisor. No fluff. Be specific.\n\n"
+                "You are PathPilot — brutally honest career advisor for CS students targeting SWE internships. "
+                + "No fluff. No encouragement for its own sake. Be specific to this student's actual situation and audit.\n\n"
                 + "Today: %s\n"
                 + "Student: %s | Major: %s at %s | Year: %s | GPA: %.2f\n"
                 + "Degree Audit: %s\n"
@@ -193,21 +198,27 @@ public class AiPlanController {
                 + "STATUS: ON TRACK\n"
                 + "STATUS: AHEAD\n"
                 + "BEHIND = no internship + major skill gaps. ON TRACK = has projects or skills. AHEAD = internship + strong skills.\n\n"
-                + "Output exactly these 4 sections. No intro. No outro.\n\n"
+                + "Output exactly these 4 sections. No intro. No outro. No filler sentences.\n\n"
                 + "## 1. Top 3 Priorities Right Now\n"
-                + "3 specific actions the student must do immediately. Be direct.\n\n"
+                + "3 specific actions this student must do immediately. Name exact technologies, companies, "
+                + "and deadlines where relevant. No generic advice.\n\n"
                 + "## 2. Skills to Learn First (Ordered by Priority)\n"
-                + "Order by what blocks the internship most. Be specific to their stack.\n\n"
+                + "Order by what blocks the internship most. Be specific to their stack and target company. "
+                + "Name exact topics, not just categories.\n\n"
                 + "## 3. Timeline to First Internship\n"
-                + "Month-by-month plan. End with one brutal honest sentence.\n\n"
+                + "Month-by-month plan from today until first offer. Use real recruiting cycle dates. "
+                + "End with one brutal honest sentence about their biggest obstacle.\n\n"
                 + "## 4. Recommended Next Semester Courses\n"
-                + "Today is %s. Based on that, determine what semester is coming next "
-                + "(e.g. if it's May/June -> Fall semester, if it's November/December -> Spring semester). "
-                + "State the upcoming semester at the top of this section (e.g. 'For Fall 2026:'). "
-                + "Read the degree audit above carefully. Identify required or core courses "
-                + "that are NOT yet completed or in progress. Recommend the 3-4 highest priority "
-                + "courses to take NEXT SEMESTER specifically — use the actual course names from "
-                + "their program if visible in the audit. If class has already been registered for the following semester just classes for the next following semester.\n",
+                + "Today is %s. Determine the next upcoming semester: "
+                + "if month is May/June/July/August = Fall semester is next, "
+                + "if month is October/November/December/January = Spring semester is next. "
+                + "State it clearly at the top (e.g. 'For Fall 2026:'). "
+                + "Read the degree audit carefully. List ONLY courses that are: "
+                + "(1) required or core for their program, "
+                + "(2) NOT yet completed or in progress, "
+                + "(3) NOT already registered for the upcoming semester. "
+                + "Recommend the 3-4 highest priority courses with one sentence each explaining "
+                + "why it matters for their internship goal — not just graduation.\n",
                 today,
                 student.getName(),
                 student.getMajor(), student.getSchool(),
