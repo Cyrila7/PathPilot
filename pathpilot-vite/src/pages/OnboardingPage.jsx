@@ -216,7 +216,7 @@ function StepSkills({ data, onChange }) {
           GitHub Projects — list your deployed projects
         </label>
         <p className="text-gray-600 text-xs mb-2">
-          Be specific. Name the project, stack, and whether it's deployed. This is what stops the AI from giving generic advice.
+          Be specific. Name the project, stack, and whether it's deployed. This stops the AI from giving generic advice.
         </p>
         <textarea
           className={inputClass}
@@ -236,7 +236,6 @@ function StepSkills({ data, onChange }) {
           onChange={e => onChange("githubUrl", e.target.value)}
         />
       </div>
-
     </div>
   );
 }
@@ -351,7 +350,7 @@ function OnboardingPage() {
         if (s.skillProfile) {
           const gaps = s.skillProfile.skillGaps || "";
           const extract = (key) => {
-            const match = gaps.match(new RegExp(`${key}:\\s*([^,]+)`));
+            const match = gaps.match(new RegExp(`${key}:\\s*([^|]+)`));
             return match ? match[1].trim() : "";
           };
           setSkills({
@@ -397,6 +396,10 @@ function OnboardingPage() {
   async function handleSubmit() {
     setLoading(true);
     try {
+      // ← decode email from JWT so new accounts don't get 403
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      const email = tokenPayload.sub || tokenPayload.email || "";
+
       const skillSummary = [
         skills.leetcodeLevel && `LeetCode: ${skills.leetcodeLevel}`,
         skills.internshipExp && `Internship: ${skills.internshipExp}`,
@@ -410,7 +413,7 @@ function OnboardingPage() {
 
       const payload = {
         name: profile.name,
-        email: "",
+        email: email,  // ← real email from JWT
         major: profile.major,
         school: profile.school,
         gpa: profile.gpa,
