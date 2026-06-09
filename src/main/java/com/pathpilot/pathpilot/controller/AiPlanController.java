@@ -74,7 +74,7 @@ public class AiPlanController {
 
         Map<String, Object> body = new HashMap<>();
         body.put("model", "claude-sonnet-4-6");
-        body.put("max_tokens", 1400);
+        body.put("max_tokens", 1200);
         body.put("stream", true);
         body.put("messages", List.of(Map.of("role", "user", "content", prompt)));
 
@@ -165,8 +165,8 @@ public class AiPlanController {
         String today = java.time.LocalDate.now().toString();
 
         String degreeAudit = student.getDegreeWorksText();
-        if (degreeAudit != null && degreeAudit.length() > 800) {
-            degreeAudit = degreeAudit.substring(0, 800) + "... [truncated]";
+        if (degreeAudit != null && degreeAudit.length() > 1200) {
+            degreeAudit = degreeAudit.substring(0, 1200) + "... [truncated]";
         }
 
         String targetRole = student.getCareerGoal() != null
