@@ -171,16 +171,15 @@ function StepRole({ data, onChange }) {
 
 function StepSkills({ data, onChange }) {
   const questions = [
-    { key: "hasProjects", label: "Do you have GitHub projects?", options: ["None", "1–2 projects", "3+ projects"] },
     { key: "leetcodeLevel", label: "LeetCode consistency?", options: ["Never done it", "Done some", "Weekly practice"] },
     { key: "internshipExp", label: "Internship or work experience?", options: ["None", "1 internship", "2+ internships"] },
     { key: "dsaLevel", label: "Comfortable with DSA?", options: ["Beginner", "Intermediate", "Strong"] },
-    { key: "builtEndToEnd", label: "Built anything end to end?", options: ["Not yet", "Yes — one project", "Yes — multiple"] },
   ];
 
   return (
     <div className="space-y-5">
       <p className="text-gray-400 text-sm leading-relaxed">Be honest — this is what makes the score accurate.</p>
+
       {questions.map(q => (
         <div key={q.key}>
           <label className="text-sm font-semibold text-white mb-2 block">{q.label}</label>
@@ -201,10 +200,43 @@ function StepSkills({ data, onChange }) {
           </div>
         </div>
       ))}
+
       <div>
         <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">Current Skills (comma separated)</label>
-        <input className={inputClass} placeholder="Java, Spring Boot, React, SQL..." value={data.currentSkills} onChange={e => onChange("currentSkills", e.target.value)} />
+        <input
+          className={inputClass}
+          placeholder="Java, Spring Boot, React, SQL..."
+          value={data.currentSkills}
+          onChange={e => onChange("currentSkills", e.target.value)}
+        />
       </div>
+
+      <div>
+        <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">
+          GitHub Projects — list your deployed projects
+        </label>
+        <p className="text-gray-600 text-xs mb-2">
+          Be specific. Name the project, stack, and whether it's deployed. This is what stops the AI from giving generic advice.
+        </p>
+        <textarea
+          className={inputClass}
+          rows={4}
+          placeholder={`e.g.\n- PathPilot: Spring Boot + React + PostgreSQL, deployed on Railway/Vercel\n- Laundry System: Java + Spring Security + JWT, REST API\n- DataMint Ghana: FastAPI + OCR + React, national ID platform`}
+          value={data.projects || ""}
+          onChange={e => onChange("projects", e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-xs text-gray-400 uppercase tracking-widest mb-1 block">GitHub URL (optional)</label>
+        <input
+          className={inputClass}
+          placeholder="https://github.com/yourusername"
+          value={data.githubUrl || ""}
+          onChange={e => onChange("githubUrl", e.target.value)}
+        />
+      </div>
+
     </div>
   );
 }
@@ -274,7 +306,8 @@ function OnboardingPage() {
   });
 
   const [skills, setSkills] = useState({
-    hasProjects: "", leetcodeLevel: "", internshipExp: "", dsaLevel: "", builtEndToEnd: "", currentSkills: "",
+    leetcodeLevel: "", internshipExp: "", dsaLevel: "",
+    currentSkills: "", projects: "", githubUrl: "",
   });
 
   function updateProfile(key, val) { setProfile(p => ({ ...p, [key]: val })); }
@@ -322,12 +355,12 @@ function OnboardingPage() {
             return match ? match[1].trim() : "";
           };
           setSkills({
-            hasProjects: extract("GitHub"),
             leetcodeLevel: extract("LeetCode"),
             internshipExp: extract("Internship"),
             dsaLevel: extract("DSA"),
-            builtEndToEnd: extract("End-to-end project"),
             currentSkills: s.skillProfile.currentSkills || "",
+            projects: extract("Projects") || "",
+            githubUrl: extract("GitHub URL") || "",
           });
         }
       } catch (err) {
@@ -365,12 +398,12 @@ function OnboardingPage() {
     setLoading(true);
     try {
       const skillSummary = [
-        skills.hasProjects && `GitHub: ${skills.hasProjects}`,
         skills.leetcodeLevel && `LeetCode: ${skills.leetcodeLevel}`,
         skills.internshipExp && `Internship: ${skills.internshipExp}`,
         skills.dsaLevel && `DSA: ${skills.dsaLevel}`,
-        skills.builtEndToEnd && `End-to-end project: ${skills.builtEndToEnd}`,
-      ].filter(Boolean).join(", ");
+        skills.projects && `Projects: ${skills.projects}`,
+        skills.githubUrl && `GitHub URL: ${skills.githubUrl}`,
+      ].filter(Boolean).join(" | ");
 
       const auditText = audit.degreeWorksText ||
         `Credits completed: ${audit.creditsCompleted}, Credits remaining: ${audit.creditsRemaining}, Courses: ${audit.coursesCompleted}`;
@@ -426,7 +459,6 @@ function OnboardingPage() {
         student = await createRes.json();
       }
 
-      // ─── Streaming ───────────────────────────────────────────────
       setStreamingText("");
       const planRes = await fetch(
         `https://pathpilot-production-de7c.up.railway.app/students/${student.id}/ai-plan`,
@@ -442,9 +474,7 @@ function OnboardingPage() {
         if (done) break;
         const chunk = decoder.decode(value);
 
-        // ← backend sends [DONE] when plan is saved — navigate immediately
         if (chunk.includes("[DONE]")) {
-          console.log("DONE received, redirecting...");
           localStorage.setItem("onboardingComplete", "true");
           window.location.replace("/dashboard");
           return;
@@ -458,7 +488,6 @@ function OnboardingPage() {
         if (text) setStreamingText(prev => prev + text);
       }
 
-      // fallback redirect if [DONE] was missed
       localStorage.setItem("onboardingComplete", "true");
       navigate("/dashboard");
 

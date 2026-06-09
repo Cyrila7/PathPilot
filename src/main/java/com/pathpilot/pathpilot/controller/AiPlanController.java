@@ -188,7 +188,7 @@ public class AiPlanController {
                 + "Student: %s | Major: %s at %s | Year: %s | GPA: %.2f\n"
                 + "Degree Audit: %s\n"
                 + "Target: %s at %s\n"
-                + "Skills: %s | Gaps: %s\n\n"
+                + "Skills: %s | Profile: %s\n\n"
                 + "Grade-level urgency rules (apply strictly):\n"
                 + "- FRESHMAN/SOPHOMORE: build fundamentals, explore, no internship panic yet\n"
                 + "- JUNIOR: limited runway — must be internship-ready this cycle\n"
