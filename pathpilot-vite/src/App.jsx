@@ -5,6 +5,7 @@ import DashboardPage from "./pages/DashboardPage";
 import LandingPage from "./pages/LandingPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ScoreCardPage from "./pages/Scorecardpage";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/scorecard" element={<ScoreCardPage />} />
         <Route
           path="/onboarding"
           element={
@@ -26,6 +28,7 @@ function App() {
           element={
             <ProtectedRoute>
               <DashboardPage />
+              <ScoreCardPage />
             </ProtectedRoute>
           }
         />

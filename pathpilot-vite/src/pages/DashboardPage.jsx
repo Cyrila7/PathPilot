@@ -277,6 +277,12 @@ function DashboardPage() {
             >
               Logout
             </button>
+            <button
+              onClick={() => navigate("/scorecard")}
+              className="text-sm text-gray-400 border border-gray-700 hover:text-white hover:border-gray-500 px-4 py-2 rounded-lg transition-colors"
+            >
+              Share score
+            </button>
           </div>
         </div>
 
