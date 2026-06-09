@@ -74,7 +74,7 @@ public class AiPlanController {
 
         Map<String, Object> body = new HashMap<>();
         body.put("model", "claude-sonnet-4-6");
-        body.put("max_tokens", 2048);
+        body.put("max_tokens", 1400);
         body.put("stream", true);
         body.put("messages", List.of(Map.of("role", "user", "content", prompt)));
 
@@ -207,8 +207,7 @@ public class AiPlanController {
                 + "Read the degree audit above carefully. Identify required or core courses "
                 + "that are NOT yet completed or in progress. Recommend the 3-4 highest priority "
                 + "courses to take NEXT SEMESTER specifically — use the actual course names from "
-                + "their program if visible in the audit. Explain why each one matters for their "
-                + "internship goal, not just graduation in short.\n",
+                + "their program if visible in the audit. If class has already been registered for the following semester just classes for the next following semester.\n",
                 today,
                 student.getName(),
                 student.getMajor(), student.getSchool(),
