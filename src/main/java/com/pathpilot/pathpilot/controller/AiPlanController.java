@@ -71,6 +71,9 @@ public class AiPlanController {
         StringBuilder fullText = new StringBuilder();
 
         String prompt = buildPrompt(student);
+        long generationStartedAt = System.nanoTime();
+        java.util.concurrent.atomic.AtomicBoolean firstChunkLogged = new java.util.concurrent.atomic.AtomicBoolean(false);
+        System.out.println("PathPilot AI request started; prompt characters=" + prompt.length());
 
         Map<String, Object> body = new HashMap<>();
         body.put("model", "claude-sonnet-4-6");
@@ -95,6 +98,9 @@ public class AiPlanController {
                                 Map<String, Object> delta = (Map<String, Object>) chunkMap.get("delta");
                                 String text = (String) delta.get("text");
                                 if (text != null) {
+                                    if (firstChunkLogged.compareAndSet(false, true)) {
+                                        System.out.println("PathPilot AI first text after ms=" + ((System.nanoTime() - generationStartedAt) / 1_000_000));
+                                    }
                                     fullText.append(text);
                                     emitter.send(text);
                                 }
@@ -107,6 +113,7 @@ public class AiPlanController {
                     () -> {
                         try {
                             String planText = fullText.toString();
+                            System.out.println("PathPilot AI completed; duration ms=" + ((System.nanoTime() - generationStartedAt) / 1_000_000) + "; output characters=" + planText.length());
                             if (!planText.contains("## 4.") || planText.length() < 400) {
                                 emitter.completeWithError(new IllegalStateException("AI assessment incomplete; not saved."));
                                 return;
