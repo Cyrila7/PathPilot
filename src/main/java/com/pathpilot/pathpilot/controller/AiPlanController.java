@@ -243,21 +243,17 @@ public class AiPlanController {
                 + "## 3. Timeline to First Internship\n"
                 + "Month-by-month plan from today until first offer. Use only future recruiting cycles; do not claim exact deadlines without evidence. "
                 + "End with one candid, constructive sentence about their biggest obstacle.\n\n"
-                + "## 4. Recommended Next Semester Courses\n"
-                + "Today is %s. Determine the next upcoming semester: "
-                + "if month is May/June/July/August = Fall semester is next, "
-                + "if month is October/November/December/January = Spring semester is next. "
-                + "State it clearly at the top (e.g. 'For Fall 2026:'). "
-                + "Use the parsed statuses first. GRADE_RECORDED means a grade exists, not necessarily a passed requirement. "
-                + "REQUIREMENT_OPTION means one possible way to satisfy a requirement, not a mandatory individual course. "
-                + "Concentration tracks are alternatives; do not assume the student must take every track. "
-                + "Do not assert prerequisite eligibility or course availability without evidence. "
-                + "Read the degree audit carefully. If audit evidence is incomplete, say so. List ONLY courses that are: "
-                + "(1) required or core for their program, "
-                + "(2) NOT yet completed or in progress, "
-                + "(3) NOT already registered for the upcoming semester. "
-                + "Recommend the 3-4 highest priority courses with one sentence each explaining "
-                + "why it matters for their internship goal — not just graduation. If no courses can be verified, say so. Finish every section.\n",
+                + "## 4. Recommended Next Semester Courses\\n"
+                + "Today is %s. Name the next upcoming semester and year correctly. "
+                + "Use the degree audit and parsed statuses to select at most 4 courses that are still needed and not in progress. "
+                + "Never recommend completed courses. GRADE_RECORDED does not prove a passing grade. "
+                + "Do not treat alternative courses or concentration tracks as individually mandatory. "
+                + "Do not claim courses are offered or prerequisites met without evidence. "
+                + "Output only a heading such as 'For Spring 2027:', then a compact Markdown table with columns "
+                + "'Course | Requirement status'. Each row should contain the course code and official name, "
+                + "and either 'Required' or 'Choose one' for alternatives. No career justifications or paragraphs. "
+                + "End with exactly this note: 'Based on your DegreeWorks audit. Confirm prerequisites and availability with your academic advisor.' "
+                + "If there are no verified courses, say that instead.\\n",
                 today,
                 student.getName(),
                 student.getMajor(), student.getSchool(),
