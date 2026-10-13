@@ -375,6 +375,22 @@ function OnboardingPage() {
       if (!profile.school.trim()) return "Please enter your school.";
       if (!profile.major.trim()) return "Please enter your major.";
     }
+    if (step === 2) {
+      const pastedAudit = audit.degreeWorksText.trim();
+
+      const hasManualInfo =
+        String(audit.creditsCompleted).trim() ||
+        String(audit.creditsRemaining).trim() ||
+        audit.coursesCompleted.trim();
+
+      if (!pastedAudit && !hasManualInfo) {
+        return "Please paste your DegreeWorks audit or enter your academic information.";
+      }
+
+      if (pastedAudit && pastedAudit.length < 50) {
+        return "Your pasted audit looks too short. Please paste the full DegreeWorks information.";
+      }
+    }
     if (step === 3) {
       if (!role.targetRole.trim()) return "Please enter your target role.";
     }
