@@ -1,12 +1,15 @@
 package com.pathpilot.pathpilot.model;
 
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Column;
 
 @Embeddable
 public class SkillProfile {
 
     private String skillLevel;
+    @Column(columnDefinition = "TEXT")
     private String currentSkills;
+    @Column(columnDefinition = "TEXT")
     private String skillGaps;
 
     public SkillProfile() {}
