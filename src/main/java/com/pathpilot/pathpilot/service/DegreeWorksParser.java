@@ -56,7 +56,7 @@ public class DegreeWorksParser {
 
             for (int j = 0; j < tokens.length; j++) {
                 String token = tokens[j].replaceAll("[,;]$", "");
-                if (token.matches("[A-Z]{2,5}")) {
+                if (token.matches("[A-Z]{2,5}") && !token.equals("OR") && !token.equals("AND")) {
                     prefix = token;
                 } else if (token.matches("\\d{4}[A-Z]{0,2}") && !prefix.isEmpty()) {
                     codes.add(prefix + " " + token);
