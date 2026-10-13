@@ -94,6 +94,49 @@ function renderLines(lines) {
   });
 }
 
+function renderAssessmentSection(section) {
+  if (!section.title.toLowerCase().includes("recommended next semester courses")) {
+    return renderLines(section.lines);
+  }
+
+  const tableLines = section.lines.filter(line => /^\\|.*\\|$/.test(line));
+  const rows = tableLines.slice(1).filter(line => !/^\\|[\\s:|-]+\\|$/.test(line)).map(line => {
+    const cells = line.slice(1, -1).split("|").map(cell => cell.trim());
+    return cells.length === 2 ? cells : null;
+  }).filter(Boolean);
+
+  // Older saved assessments may not have a course table.
+  if (!rows.length) return renderLines(section.lines);
+
+  const semester = section.lines.find(line => /^For .+:/.test(line));
+  const note = section.lines.find(line => line.startsWith("Based on your DegreeWorks audit."));
+  return (
+    <div className="space-y-4">
+      {semester && <p className="font-semibold text-gray-100">{semester}</p>}
+      <div className="overflow-x-auto rounded-lg border border-gray-700">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-gray-900 text-gray-400">
+            <tr><th scope="col" className="px-4 py-3 font-medium">Course</th><th scope="col" className="px-4 py-3 font-medium">Status</th></tr>
+          </thead>
+          <tbody className="divide-y divide-gray-800">
+            {rows.map(([course, status], index) => (
+              <tr key={index}>
+                <td className="px-4 py-3 text-gray-100">{course}</td>
+                <td className="px-4 py-3">
+                  <span className={status.toLowerCase().includes("choose") ? "inline-block rounded-full bg-blue-950 px-3 py-1 text-xs font-medium text-blue-300" : "inline-block rounded-full bg-gray-800 px-3 py-1 text-xs font-medium text-gray-200"}>
+                    {status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {note && <p className="text-xs leading-relaxed text-gray-400">{note}</p>}
+    </div>
+  );
+}
+
 function AccordionSection({ title, children }) {
   const [open, setOpen] = useState(false);
   return (
@@ -337,7 +380,7 @@ function DashboardPage() {
               </p>
               {sections.map((section, i) => (
                 <AccordionSection key={i} title={section.title}>
-                  {renderLines(section.lines)}
+                  {renderAssessmentSection(section)}
                 </AccordionSection>
               ))}
             </div>
@@ -384,7 +427,7 @@ function DashboardPage() {
                         </div>
                         {parseSections(plan.planText).map((section, j) => (
                           <AccordionSection key={j} title={section.title}>
-                            {renderLines(section.lines)}
+                            {renderAssessmentSection(section)}
                           </AccordionSection>
                         ))}
                       </AccordionSection>
