@@ -70,4 +70,45 @@ public class DegreeWorksParser {
         }
         return "UNKNOWN";
     }
+    /**
+     * Extracts conservative, course-level facts for AI guidance.
+     * Course options are not guaranteed requirements.
+     */
+    public String summarizeCourseStatuses(String audit) {
+        if (audit == null || audit.isBlank()) return "No degree audit provided.";
+
+        java.util.Set<String> courseCodes = new java.util.LinkedHashSet<>();
+        String[] lines = audit.split("\\R");
+        for (String raw : lines) {
+            String line = raw.trim().toUpperCase(Locale.ROOT);
+            if (COURSE.matcher(line).matches()) courseCodes.add(line);
+        }
+
+        // Also collect course codes from explicit Still needed requirement lines.
+        for (int i = 0; i < lines.length - 1; i++) {
+            if (!lines[i].trim().equalsIgnoreCase("Still needed:")) continue;
+            Matcher matcher = CHOICE.matcher(lines[i + 1].trim());
+            if (!matcher.matches()) continue;
+            String prefix = "";
+            for (String word : matcher.group(1).toUpperCase(Locale.ROOT).split("\\s+")) {
+                if (word.matches("[A-Z]{2,5}") && !word.equals("OR") && !word.equals("AND")) {
+                    prefix = word;
+                } else if (word.matches("\\d{4}[A-Z]{0,2}") && !prefix.isEmpty()) {
+                    courseCodes.add(prefix + " " + word);
+                }
+            }
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (String code : courseCodes) {
+            String status = getCourseStatus(audit, code);
+            if (!status.equals("UNKNOWN")) {
+                result.append(code).append(": ").append(status).append("\\n");
+            }
+        }
+        result.append("Note: requirement options are alternatives; concentration tracks are not all required. ")
+              .append("Recorded grades do not establish prerequisite eligibility.");
+        return result.toString();
+    }
+
 }
