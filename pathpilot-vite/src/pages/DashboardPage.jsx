@@ -99,8 +99,8 @@ function renderAssessmentSection(section) {
     return renderLines(section.lines);
   }
 
-  const tableLines = section.lines.filter(line => /^\\|.*\\|$/.test(line));
-  const rows = tableLines.slice(1).filter(line => !/^\\|[\\s:|-]+\\|$/.test(line)).map(line => {
+  const tableLines = section.lines.filter(line => line.startsWith("|") && line.endsWith("|"));
+  const rows = tableLines.slice(1).filter(line => line.replace(/[|:\s-]/g, "").length > 0).map(line => {
     const cells = line.slice(1, -1).split("|").map(cell => cell.trim());
     return cells.length === 2 ? cells : null;
   }).filter(Boolean);
