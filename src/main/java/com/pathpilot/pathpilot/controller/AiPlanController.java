@@ -198,6 +198,11 @@ public class AiPlanController {
             degreeAudit = degreeAudit.substring(0, 9000) + "... [truncated]";
         }
 
+        // Course facts are extracted before the AI sees the audit.
+        // Unknown and alternative courses are not guaranteed requirements.
+        String courseFacts = new com.pathpilot.pathpilot.service.DegreeWorksParser()
+                .summarizeCourseStatuses(degreeAudit);
+
         String targetRole = student.getCareerGoal() != null
                 ? student.getCareerGoal().getTargetRole() : "Not set";
 
@@ -215,7 +220,7 @@ public class AiPlanController {
                 + "No fluff. No encouragement for its own sake. Be specific to this student's actual situation and audit.\n\n"
                 + "Today: %s\n"
                 + "Student: %s | Major: %s at %s | Year: %s | GPA: %.2f\n"
-                + "Degree Audit: %s\n"
+                + "Parsed course statuses (use these ahead of guesses from raw text):\n%s\n"\n                + "Degree Audit: %s\n"
                 + "Target: %s at %s\n"
                 + "Skills: %s | Profile: %s\n\n"
                 + "Grade-level urgency rules (apply strictly):\n"
@@ -242,7 +247,7 @@ public class AiPlanController {
                 + "if month is May/June/July/August = Fall semester is next, "
                 + "if month is October/November/December/January = Spring semester is next. "
                 + "State it clearly at the top (e.g. 'For Fall 2026:'). "
-                + "Read the degree audit carefully. If audit evidence is incomplete, say so. List ONLY courses that are: "
+                + "Use the parsed statuses first. GRADE_RECORDED means a grade exists, not necessarily a passed requirement. "\n                + "REQUIREMENT_OPTION means one possible way to satisfy a requirement, not a mandatory individual course. "\n                + "Concentration tracks are alternatives; do not assume the student must take every track. "\n                + "Do not assert prerequisite eligibility or course availability without evidence. "\n                + "Read the degree audit carefully. If audit evidence is incomplete, say so. List ONLY courses that are: "
                 + "(1) required or core for their program, "
                 + "(2) NOT yet completed or in progress, "
                 + "(3) NOT already registered for the upcoming semester. "
