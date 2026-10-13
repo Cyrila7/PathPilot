@@ -74,7 +74,7 @@ public class AiPlanController {
 
         Map<String, Object> body = new HashMap<>();
         body.put("model", "claude-sonnet-4-6");
-        body.put("max_tokens", 1200);
+        body.put("max_tokens", 3500);
         body.put("stream", true);
         body.put("messages", List.of(Map.of("role", "user", "content", prompt)));
 
@@ -107,6 +107,10 @@ public class AiPlanController {
                     () -> {
                         try {
                             String planText = fullText.toString();
+                            if (!planText.contains("## 4.") || planText.length() < 400) {
+                                emitter.completeWithError(new IllegalStateException("AI assessment incomplete; not saved."));
+                                return;
+                            }
 
                             // Parse status from first line
                             String status = "UNKNOWN";
@@ -118,7 +122,7 @@ public class AiPlanController {
                             }
 
                             // Calculate score and persist to DB
-                            int score = calculateScore(planText, status);
+                            int score = calculateScore(student);
                             planHistoryRepository.save(new PlanHistory(email, planText, status, score));
 
                             emitter.send("[DONE]");
@@ -147,14 +151,39 @@ public class AiPlanController {
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
     // calculateScore() — deterministic, stored in DB on save
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-    private int calculateScore(String planText, String status) {
-        int hash = 0;
-        for (char c : planText.toCharArray()) {
-            hash = (hash * 31 + c) & 0x7fffffff;
+    // Academic 25, technical 30, experience 25, preparation 20.
+    private int calculateScore(Student student) {
+        int academic = 0;
+        if (student.getGradeLevel() != null) academic += 5;
+        if (student.getGpa() >= 2.0 && student.getGpa() <= 4.0) academic += 5;
+        if (hasText(student.getDegreeWorksText())) academic += 15;
+        int technical = 0;
+        if (student.getSkillProfile() != null) {
+            String level = student.getSkillProfile().getSkillLevel();
+            if (level != null) {
+                switch (level.trim().toLowerCase()) {
+                    case "beginner": technical += 5; break;
+                    case "intermediate": technical += 10; break;
+                    case "strong": technical += 15; break;
+                    default: break;
+                }
+            }
+            if (hasText(student.getSkillProfile().getCurrentSkills())) technical += 10;
+            if (hasText(student.getSkillProfile().getSkillGaps())) technical += 5;
         }
-        if ("AHEAD".equals(status)) return 78 + (hash % 12);
-        if ("ON TRACK".equals(status)) return 55 + (hash % 18);
-        return 35 + (hash % 18);
+        // No structured project or internship evidence is currently stored.
+        int experience = 0;
+        int preparation = 0;
+        if (student.getCareerGoal() != null) {
+            if (hasText(student.getCareerGoal().getTargetRole())) preparation += 10;
+            if (hasText(student.getCareerGoal().getTargetCompany())) preparation += 5;
+            if (hasText(student.getCareerGoal().getTargetDate())) preparation += 5;
+        }
+        return Math.min(100, academic + technical + experience + preparation);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank() && !value.equalsIgnoreCase("Not set");
     }
 
     // ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
@@ -165,8 +194,8 @@ public class AiPlanController {
         String today = java.time.LocalDate.now().toString();
 
         String degreeAudit = student.getDegreeWorksText();
-        if (degreeAudit != null && degreeAudit.length() > 1200) {
-            degreeAudit = degreeAudit.substring(0, 1200) + "... [truncated]";
+        if (degreeAudit != null && degreeAudit.length() > 9000) {
+            degreeAudit = degreeAudit.substring(0, 9000) + "... [truncated]";
         }
 
         String targetRole = student.getCareerGoal() != null
@@ -206,19 +235,19 @@ public class AiPlanController {
                 + "Order by what blocks the internship most. Be specific to their stack and target company. "
                 + "Name exact topics, not just categories.\n\n"
                 + "## 3. Timeline to First Internship\n"
-                + "Month-by-month plan from today until first offer. Use real recruiting cycle dates. "
-                + "End with one brutal honest sentence about their biggest obstacle.\n\n"
+                + "Month-by-month plan from today until first offer. Use only future recruiting cycles; do not claim exact deadlines without evidence. "
+                + "End with one candid, constructive sentence about their biggest obstacle.\n\n"
                 + "## 4. Recommended Next Semester Courses\n"
                 + "Today is %s. Determine the next upcoming semester: "
                 + "if month is May/June/July/August = Fall semester is next, "
                 + "if month is October/November/December/January = Spring semester is next. "
                 + "State it clearly at the top (e.g. 'For Fall 2026:'). "
-                + "Read the degree audit carefully. List ONLY courses that are: "
+                + "Read the degree audit carefully. If audit evidence is incomplete, say so. List ONLY courses that are: "
                 + "(1) required or core for their program, "
                 + "(2) NOT yet completed or in progress, "
                 + "(3) NOT already registered for the upcoming semester. "
                 + "Recommend the 3-4 highest priority courses with one sentence each explaining "
-                + "why it matters for their internship goal — not just graduation.\n",
+                + "why it matters for their internship goal — not just graduation. If no courses can be verified, say so. Finish every section.\n",
                 today,
                 student.getName(),
                 student.getMajor(), student.getSchool(),
