@@ -262,7 +262,7 @@ public class AiPlanController {
                 student.getName(),
                 student.getMajor(), student.getSchool(),
                 student.getGradeLevel(), student.getGpa(),
-                degreeAudit,
+                courseFacts, degreeAudit,
                 targetRole, targetCompany,
                 currentSkills, skillGaps,
                 today
