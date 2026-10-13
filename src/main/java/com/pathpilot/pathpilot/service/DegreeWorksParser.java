@@ -103,7 +103,7 @@ public class DegreeWorksParser {
         for (String code : courseCodes) {
             String status = getCourseStatus(audit, code);
             if (!status.equals("UNKNOWN")) {
-                result.append(code).append(": ").append(status).append("\\n");
+                result.append(code).append(": ").append(status).append("\n");
             }
         }
         result.append("Note: requirement options are alternatives; concentration tracks are not all required. ")
