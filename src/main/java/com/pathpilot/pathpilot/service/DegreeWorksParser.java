@@ -23,7 +23,6 @@ public class DegreeWorksParser {
         if (!COURSE.matcher(target).matches()) return "UNKNOWN";
 
         String[] lines = audit.split("\\R");
-        boolean stillNeeded = false;
 
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i].trim();
@@ -37,7 +36,7 @@ public class DegreeWorksParser {
                 if (GRADE.matcher(grade).matches()) {
                     if (grade.equals("IP")) return "IN_PROGRESS";
                     // A recorded grade is not necessarily a passing grade.
-                    return grade.equals("F") ? "GRADE_RECORDED" : "GRADE_RECORDED";
+                    return "GRADE_RECORDED";
                 }
             }
         }
@@ -69,6 +68,6 @@ public class DegreeWorksParser {
                 return codes.size() == 1 ? "STILL_NEEDED" : "REQUIREMENT_OPTION";
             }
         }
-        return stillNeeded ? "STILL_NEEDED" : "UNKNOWN";
+        return "UNKNOWN";
     }
 }
