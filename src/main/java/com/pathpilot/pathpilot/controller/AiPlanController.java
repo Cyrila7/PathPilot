@@ -73,6 +73,9 @@ public class AiPlanController {
         String prompt = buildPrompt(student);
         long generationStartedAt = System.nanoTime();
         java.util.concurrent.atomic.AtomicBoolean firstChunkLogged = new java.util.concurrent.atomic.AtomicBoolean(false);
+        java.util.concurrent.atomic.AtomicInteger inputTokens = new java.util.concurrent.atomic.AtomicInteger(-1);
+        java.util.concurrent.atomic.AtomicInteger outputTokens = new java.util.concurrent.atomic.AtomicInteger(-1);
+        ObjectMapper streamMapper = new ObjectMapper();
         System.out.println("PathPilot AI request started; prompt characters=" + prompt.length());
 
         Map<String, Object> body = new HashMap<>();
@@ -92,11 +95,29 @@ public class AiPlanController {
                 .subscribe(
                     chunk -> {
                         try {
-                            if (chunk.contains("content_block_delta")) {
-                                String json = chunk.replace("data: ", "").trim();
-                                Map<String, Object> chunkMap = new ObjectMapper().readValue(json, Map.class);
+                            // Anthropic SSE payloads carry token usage in message_start and message_delta.
+                            // Ignore non-data frames; do not log the student's audit or generated text.
+                            String json = chunk.trim();
+                            if (json.startsWith("data:")) json = json.substring(5).trim();
+                            if (!json.startsWith("{")) return;
+                            Map<String, Object> chunkMap = streamMapper.readValue(json, Map.class);
+                            String eventType = (String) chunkMap.get("type");
+                            if ("message_start".equals(eventType)) {
+                                Map<String, Object> message = (Map<String, Object>) chunkMap.get("message");
+                                if (message != null) {
+                                    Map<String, Object> usage = (Map<String, Object>) message.get("usage");
+                                    if (usage != null && usage.get("input_tokens") instanceof Number) {
+                                        inputTokens.set(((Number) usage.get("input_tokens")).intValue());
+                                    }
+                                }
+                            } else if ("message_delta".equals(eventType)) {
+                                Map<String, Object> usage = (Map<String, Object>) chunkMap.get("usage");
+                                if (usage != null && usage.get("output_tokens") instanceof Number) {
+                                    outputTokens.set(((Number) usage.get("output_tokens")).intValue());
+                                }
+                            } else if ("content_block_delta".equals(eventType)) {
                                 Map<String, Object> delta = (Map<String, Object>) chunkMap.get("delta");
-                                String text = (String) delta.get("text");
+                                String text = delta == null ? null : (String) delta.get("text");
                                 if (text != null) {
                                     if (firstChunkLogged.compareAndSet(false, true)) {
                                         System.out.println("PathPilot AI first text after ms=" + ((System.nanoTime() - generationStartedAt) / 1_000_000));
@@ -113,7 +134,7 @@ public class AiPlanController {
                     () -> {
                         try {
                             String planText = fullText.toString();
-                            System.out.println("PathPilot AI completed; duration ms=" + ((System.nanoTime() - generationStartedAt) / 1_000_000) + "; output characters=" + planText.length());
+                            System.out.println("PathPilot AI completed; duration ms=" + ((System.nanoTime() - generationStartedAt) / 1_000_000) + "; output characters=" + planText.length() + "; input tokens=" + inputTokens.get() + "; output tokens=" + outputTokens.get());
                             if (!planText.contains("## 4.") || planText.length() < 400) {
                                 emitter.completeWithError(new IllegalStateException("AI assessment incomplete; not saved."));
                                 return;
@@ -231,10 +252,7 @@ public class AiPlanController {
                 + "Degree Audit: %s\n"
                 + "Target: %s at %s\n"
                 + "Skills: %s | Profile: %s\n\n"
-                + "Grade-level urgency rules (apply strictly):\n"
-                + "- FRESHMAN/SOPHOMORE: build fundamentals, explore, no internship panic yet\n"
-                + "- JUNIOR: limited runway — must be internship-ready this cycle\n"
-                + "- SENIOR: almost no runway — apply aggressively now, have backup plans\n\n"
+                + "Urgency by year: freshman/sophomore = fundamentals; junior = internship-ready this cycle; senior = apply now with backup plans.\n\n"
                 + "First line must be exactly one of:\n"
                 + "STATUS: BEHIND\n"
                 + "STATUS: ON TRACK\n"
@@ -251,7 +269,7 @@ public class AiPlanController {
                 + "Month-by-month plan from today until first offer. Use only future recruiting cycles; do not claim exact deadlines without evidence. "
                 + "End with one candid, constructive sentence about their biggest obstacle.\n\n"
                 + "## 4. Recommended Next Semester Courses\\n"
-                + "Today is %s. Name the next upcoming semester and year correctly. "
+                + "Name the next upcoming semester and year correctly. "
                 + "Use the degree audit and parsed statuses to select at most 4 courses that are still needed and not in progress. "
                 + "Never recommend completed courses. GRADE_RECORDED does not prove a passing grade. "
                 + "Do not treat alternative courses or concentration tracks as individually mandatory. "
@@ -267,8 +285,7 @@ public class AiPlanController {
                 student.getGradeLevel(), student.getGpa(),
                 courseFacts, degreeAudit,
                 targetRole, targetCompany,
-                currentSkills, skillGaps,
-                today
+                currentSkills, skillGaps
         );
     }
 }
