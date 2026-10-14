@@ -124,7 +124,7 @@ public class DegreeWorksParser {
             }
             if (options.size() > 1) {
                 result.append("Choose ").append(choice.group(0).trim().split("\\s+")[0])
-                      .append(" from: ").append(String.join(" OR ", options)).append("\\n");
+                      .append(" from: ").append(String.join(" OR ", options)).append("\n");
             }
         }
         result.append("Note: requirement options are alternatives; concentration tracks are not all required. ")
