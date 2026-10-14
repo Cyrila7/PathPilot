@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pathpilot.pathpilot.service.AssessmentValidator;
 import com.pathpilot.pathpilot.model.PlanHistory;
 import com.pathpilot.pathpilot.model.Student;
 import com.pathpilot.pathpilot.repository.PlanHistoryRepository;
@@ -135,7 +136,7 @@ public class AiPlanController {
                         try {
                             String planText = fullText.toString();
                             System.out.println("PathPilot AI completed; duration ms=" + ((System.nanoTime() - generationStartedAt) / 1_000_000) + "; output characters=" + planText.length() + "; input tokens=" + inputTokens.get() + "; output tokens=" + outputTokens.get());
-                            if (!planText.contains("## 4.") || planText.length() < 400) {
+                            if (!AssessmentValidator.isValid(planText)) {
                                 emitter.completeWithError(new IllegalStateException("AI assessment incomplete; not saved."));
                                 return;
                             }
