@@ -1,65 +1,65 @@
 # PathPilot
 
-> The GPS from college to career.
-> AI-powered career gap analysis that turns college progress into job readiness.
+**AI-assisted academic planning and software engineering career guidance.**
 
-Every student. Every major. Every school.
+PathPilot is a full-stack portfolio project that turns a student's DegreeWorks audit, academic profile, skills, and career goals into an actionable assessment. It combines deterministic academic-text parsing with Claude-generated recommendations.
 
-PathPilot reads where you actually are, figures
-out what your career actually requires, and hands
-you the exact flight plan — no sugarcoating. Ever.
+**[Live application](https://path-pilot-rho.vercel.app)** · **[Public read-only demo](https://path-pilot-rho.vercel.app/demo)**
 
-🔗 Live: https://path-pilot-rho.vercel.app
+> Built as a software engineering portfolio project, not a commercial advising platform. AI recommendations are guidance, not official academic or hiring decisions.
 
----
+## Try it
 
-## Demo Account
-Skip signup — use this account:
+- **Read-only demo:** Open [the sample assessment](https://path-pilot-rho.vercel.app/demo). No account or API request required.
+- **Authenticated demo:** Visit [login](https://path-pilot-rho.vercel.app/login) and use the shared recruiter account displayed on the landing page. Use fictional data only. AI generations for this account have a basic five-attempt daily limit.
 
-**Email:** demo@pathpilot.com
-**Password:** demo123
+## What it does
 
-Preloaded with a generated career assessment.
-*(Note: demo data may reset periodically)*
+1. Students create an account and enter their academic and career profile.
+2. They paste a DegreeWorks audit and describe their current skills and target role.
+3. The Spring Boot backend parses course status information and builds a structured prompt.
+4. Claude streams a career assessment to the React interface, including priorities, skill gaps, a timeline, and possible next-semester courses.
+5. Completed, validated assessments are saved in PostgreSQL and available in plan history.
 
----
+The assessment includes a **Behind / On Track / Ahead** status and a deterministic profile-based score. These are application-generated indicators, **not validated measures of internship readiness**.
 
-## The Problem
+## Engineering highlights
 
-Schools optimize for graduation. Employers optimize
-for performance. Students are stuck in the middle
-with nobody translating between the two worlds.
+- **Java 17 / Spring Boot REST backend:** Controllers, services, Spring Data JPA, and PostgreSQL persistence.
+- **JWT authentication:** Spring Security protects student workflows and assessment history.
+- **DegreeWorks parsing:** Extracts course status information before AI generation. Distinguishes in-progress, still-needed, grade-recorded, and alternative requirements instead of treating every course mention as required.
+- **Streaming AI responses:** Spring WebClient consumes Anthropic's streaming API; server-sent events deliver output to the frontend as it arrives.
+- **Reliability checks:** AI requests have a timeout; incomplete or invalid assessments are not saved.
+- **Demo safeguards:** Generation requests verify profile ownership. The shared demo account has a simple per-process five-attempt daily limit; it resets at midnight UTC or on application restart and is **not** a distributed rate limiter.
+- **Testing:** JUnit tests cover assessment validation/save policy and demo-generation limits.
 
-Your curriculum was designed to get you a diploma
-— not get you employed. Those are not the same thing.
+## Architecture
 
-**PathPilot closes that gap.**
+```text
+React + Vite frontend (Vercel)
+       |
+       | REST / JWT / streamed assessment output
+       v
+Spring Boot API (Railway)
+       |                    |
+       | JPA                | WebClient
+       v                    v
+PostgreSQL (Railway)     Anthropic Claude API
+```
 
----
+**Backend flow:** Authenticate request → load the student's profile → parse DegreeWorks course statuses → construct the prompt → stream Claude's response → validate completed output → save assessment history.
 
-## What It Does
+## Technology
 
-A student enters their profile, pastes their
-DegreeWorks academic audit, picks their career goal,
-and completes a quick skills check. PathPilot's AI
-reads all of it, analyzes what their target career
-actually requires, finds the exact gap, and delivers
-one honest flight plan.
-
-Not a template. Not generic tips. A personalized
-roadmap built for that specific student's exact
-situation — with a clear status:
-
-* ⚠️ **Behind** — missing critical skills or
-  deadlines. Here's exactly how to fix it.
-* 📍 **On Track** — doing what needs to be done.
-  Here's what's coming up next.
-* 🚀 **Ahead** — exceeding requirements. Here are
-  higher-level opportunities you're ready for now.
-
-No sugarcoating. Ever.
-
----
+| Area | Stack |
+| --- | --- |
+| Frontend | React, Vite, Tailwind CSS, React Router |
+| Backend | Java 17, Spring Boot, Spring Security, Spring Data JPA |
+| Database | PostgreSQL |
+| AI integration | Anthropic Claude API, WebClient, SSE |
+| Authentication | JWT |
+| Tests | JUnit / Spring Boot Test |
+| Deployment | Vercel (frontend), Railway (backend/database) |
 
 ## Screenshots
 
@@ -69,209 +69,57 @@ No sugarcoating. Ever.
 ### How it works
 ![How it works](Screenshots/howitworks.webp)
 
-### Status system
-![Status system](Screenshots/status.webp)
-
-### Student profile input
+### Student dashboard
 ![Dashboard](Screenshots/dashboard.webp)
-![Dashboard](Screenshots/dashboard2.webp)
+![Dashboard details](Screenshots/dashboard2.webp)
 
-### AI-generated career assessment
-![AI Plan Output](Screenshots/plan.webp)
+### Generated assessment
+![AI plan](Screenshots/plan.webp)
+![Generated plan](Screenshots/generatedplan.png)
 
-### Generated plan
-![Generated Plan](Screenshots/generatedplan.png)
+> Some repository screenshots may show earlier UI iterations. The live application and read-only demo reflect the current recruiter-facing experience.
 
----
+## Run locally
 
-## Tech Stack
+**Requirements:** Java 17, Node.js/npm, PostgreSQL, and an Anthropic API key for live AI generation.
 
-| Layer    | Technology                     |
-| -------- | ------------------------------ |
-| Backend  | Java 17, Spring Boot, REST API |
-| Database | PostgreSQL (Railway)           |
-| Frontend | React + Vite (Vercel)          |
-| AI       | Claude API (Anthropic)         |
-| Auth     | JWT + Spring Security          |
-| Infra    | Railway, Vercel, GitHub        |
-
----
-
-## Key Features
-
-* **JWT authentication** — register, login,
-  protected routes, 7-day tokens
-* **DegreeWorks parsing** — student pastes their
-  academic audit, Claude reads and extracts
-  everything automatically
-* **Grade level aware** — Freshman through Senior,
-  urgency and tone adjust automatically based
-  on runway
-* **Honest status system** — Behind / On Track /
-  Ahead determined by real gap analysis,
-  not GPA
-* **Plan history** — every assessment saved with
-  timestamp, track progress over time
-* **Works for every major** — Nursing, CS, Finance,
-  Pre-Law, Education, Engineering, and more
-* **No sugarcoating** — PathPilot tells students
-  the truth so they can act on it
-
----
-
-## How It Works
-
-```
-Student inputs 5 things:
-
-1. Profile — school, major, grade level
-2. DegreeWorks — paste academic audit
-3. Career goal — type target role freely
-4. Skills check — what they can actually do
-5. Submit → Claude generates flight plan
-
-Backend flow:
-POST /students → save profile to PostgreSQL
-POST /students/{id}/ai-plan →
-  build prompt from student data →
-  WebClient → Anthropic API →
-  Claude analyzes gap →
-  parse STATUS line →
-  save to PlanHistory →
-  return flight plan to frontend
-
-Frontend:
-Parse STATUS → render badge
-Parse ## sections → render accordions
-Refresh history → show past assessments
+```bash
+# Backend (repository root)
+./mvnw spring-boot:run
 ```
 
----
+Configure the backend's database connection, JWT secret, and Anthropic API key through your local configuration or environment. **Never commit real secrets.** A local PostgreSQL database must be available for persistence.
 
-## API Endpoints
+In a separate terminal:
 
-```
-POST   /auth/register           — create account
-POST   /auth/login              — returns JWT token
-POST   /students                — create student profile
-GET    /students/me             — get my profile (JWT)
-PUT    /students/{id}           — update profile
-GET    /students/{id}           — get by id
-POST   /students/{id}/ai-plan   — generate plan
-GET    /students/me/plans       — plan history
+```bash
+cd pathpilot-vite
+npm install
+npm run dev
 ```
 
----
+The deployed frontend currently calls the hosted API; to use a local backend, update the frontend's API base URLs accordingly.
 
-## Architecture
+### Tests and build
 
-```
-React + Vite (Vercel)
-        ↓
-Spring Boot REST API (Railway)
-        ↓
-PostgreSQL (Railway)
-        ↓
-Claude API (Anthropic)
+```bash
+# From repository root
+./mvnw clean test
 
-Security flow:
-Request → JwtAuthFilter → extract email →
-SecurityContext → Controller →
-Repository → Database
+# From pathpilot-vite/
+npm run build
 ```
 
----
+## Limitations and tradeoffs
 
-## Data Model
+- DegreeWorks formats vary by institution; the parser may not interpret every audit correctly.
+- AI output can be inaccurate. Course availability, prerequisites, and graduation requirements must be confirmed with an academic advisor.
+- The current frontend uses hosted API URLs rather than a fully configurable API base URL.
+- The shared demo's generation limit is in memory, not persistent across restarts or multiple server instances.
+- This is a recruiter-facing portfolio application, not a production academic advising service.
 
-```
-User
-├── id, name, email, password (BCrypt)
+## Why I built it
 
-Student
-├── id, name, email, major, school, gpa
-├── degreeWorksText (TEXT column)
-├── gradeLevel (FRESHMAN → SENIOR enum)
-├── careerGoal (embedded — role, company, date)
-└── skillProfile (embedded — skills, gaps)
+As a transfer student, I wanted a clearer way to connect academic progress with the practical skills and preparation needed for software engineering internships. PathPilot became an opportunity to build that workflow end-to-end while practicing backend development, authentication, database design, external API integration, and reliability testing.
 
-PlanHistory
-├── id, studentEmail
-├── planText (TEXT column)
-├── status (BEHIND / ON TRACK / AHEAD)
-└── createdAt (LocalDateTime)
-```
-
----
-
-## What's Intentional
-
-Two design decisions left as talking points:
-
-**AuthController returns plain strings** — I know
-the correct pattern is `ResponseEntity` with proper
-HTTP status codes and JSON body. That's on the
-roadmap for V2.
-
-**Double CORS configuration** — configured at both
-the Spring MVC layer (`WebMvcConfigurer`) and the
-Spring Security layer (`SecurityFilterChain`).
-The security filter chain runs before MVC, so both
-layers need to handle preflight OPTIONS requests
-or they get blocked before reaching the controller.
-
----
-
-## Roadmap
-
-**V1 — Complete ✔**
-
-* Core loop: profile → DegreeWorks → career goal
-  → skills → AI flight plan
-* JWT auth, plan history, status system
-* Deployed and live
-
-**V2 — In progress**
-
-* Real job posting analysis via API
-* Deadline tracking and alerts
-* Shareable plan links
-* DegreeWorks PDF upload
-
-**V3 — Scale**
-
-* University partnerships
-* Advisor dashboard
-* Mobile app
-* Employer-side tools
-
----
-
-## Why This Exists
-
-Built by a transfer student who had no guide.
-
-New DegreeWorks. New requirements. Credits that
-didn't transfer right. Nobody told me what mattered
-or where I was actually headed.
-
-PathPilot is the tool I needed and didn't have.
-
-There are 900,000+ transfer students every year
-in the US alone. Every single one of them feels
-exactly this — lost, starting over, no map.
-
-The best products are built by people who lived
-the problem and couldn't wait for someone else
-to fix it. That's PathPilot.
-
----
-
-## Built By
-
-**Cyril** — NYC College of Technology
-Computer Systems Technology
-Targeting: Java Software Engineering Internship, Fall 2026
-
----
-
+**Built by Cyril** · Computer Systems Technology, NYC College of Technology
