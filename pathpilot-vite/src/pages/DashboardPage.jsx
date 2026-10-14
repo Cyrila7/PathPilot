@@ -253,17 +253,24 @@ function DashboardPage() {
     setRegenerating(true);
     setError("");
     try {
-      await fetch(
+      const generationRes = await fetch(
         `https://pathpilot-production-de7c.up.railway.app/students/${student.id}/ai-plan`,
         { method: "POST", headers: { Authorization: `Bearer ${token}` } }
       );
+      if (!generationRes.ok) throw new Error("AI request failed");
+      // The backend sends [DONE] only after validating and saving the assessment.
+      const streamBody = await generationRes.text();
+      if (!/data:\\s*\\[DONE\\]/.test(streamBody)) {
+        throw new Error("AI generation did not complete");
+      }
       const histRes = await fetch(
         "https://pathpilot-production-de7c.up.railway.app/students/me/plans",
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (histRes.ok) setPlanHistory(await histRes.json());
+      if (!histRes.ok) throw new Error("Could not load updated assessment");
+      setPlanHistory(await histRes.json());
     } catch (err) {
-      setError("Failed to regenerate plan.");
+      setError("Assessment could not be completed. Please try again.");
     } finally {
       setRegenerating(false);
     }
