@@ -65,6 +65,7 @@ function LoginPage() {
             <label className="text-xs text-gray-400 uppercase tracking-widest mb-1.5 block">Email</label>
             <input
               className="w-full bg-gray-950 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-colors text-sm"
+              value={form.email}
               placeholder="you@email.com"
               type="email"
               onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -76,10 +77,23 @@ function LoginPage() {
             <input
               className="w-full bg-gray-950 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-colors text-sm"
               type="password"
+              value={form.password}
               placeholder="••••••••"
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               onKeyDown={(e) => e.key === "Enter" && handleLogin()}
             />
+          </div>
+
+          <div className="rounded-lg border border-blue-900/70 bg-blue-950/30 px-4 py-3 text-sm">
+            <p className="font-semibold text-blue-200">Recruiter? Try the demo account</p>
+            <p className="mt-1 text-xs text-gray-400">Explore the live app with fictional student data.</p>
+            <button
+              type="button"
+              onClick={() => { setError(""); setForm({ email: "demo@pathpilot.com", password: "demo123" }); }}
+              className="mt-2 text-blue-400 hover:text-blue-300 font-semibold underline underline-offset-2"
+            >
+              Fill demo login
+            </button>
           </div>
 
           <button
