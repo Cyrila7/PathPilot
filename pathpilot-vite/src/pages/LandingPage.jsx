@@ -60,6 +60,20 @@ export default function LandingPage() {
         </div>
         <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
           <h3 className="font-bold mb-2">Want to try the live application?</h3>
+          <div className="rounded-lg border border-gray-700 bg-gray-950 p-4 mb-5 text-sm">
+              <p className="font-semibold text-white mb-3">
+                Recruiter Demo Access
+              </p>
+              <p className="text-gray-400 mb-1">
+                Email: demo@pathpilot.com
+              </p>
+              <p className="text-gray-400">
+                Password: demo123
+              </p>
+              <p className="text-xs text-gray-500 mt-3">
+                Shared account — please use fictional data only.
+              </p>
+            </div>
           <p className="text-gray-400 text-sm mb-4">The read-only demo needs no account. A separate shared demo login is provided for exploring authenticated features.</p>
           <div className="flex flex-wrap gap-4 items-center">
             <Link to="/demo" className="text-blue-400 font-semibold hover:text-blue-300">Explore sample assessment →</Link>
