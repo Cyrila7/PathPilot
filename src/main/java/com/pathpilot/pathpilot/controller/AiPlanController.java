@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pathpilot.pathpilot.service.AssessmentSavePolicy;
+import com.pathpilot.pathpilot.service.DemoGenerationLimiter;
 import com.pathpilot.pathpilot.model.PlanHistory;
 import com.pathpilot.pathpilot.model.Student;
 import com.pathpilot.pathpilot.repository.PlanHistoryRepository;
@@ -36,6 +37,7 @@ public class AiPlanController {
     private final PlanHistoryRepository planHistoryRepository;
     private final JwtUtil jwtUtil;
     private final WebClient webClient;
+    private final DemoGenerationLimiter demoGenerationLimiter = new DemoGenerationLimiter();
 
     @Value("${anthropic.api.key}")
     private String API_KEY;
@@ -69,6 +71,16 @@ public class AiPlanController {
 
         String token = authHeader.replace("Bearer ", "");
         String email = jwtUtil.extractIdentifier(token);
+        if (email == null || student.getEmail() == null || !email.equalsIgnoreCase(student.getEmail())) {
+            emitter.completeWithError(new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "You can only generate plans for your own profile."));
+            return emitter;
+        }
+        if (!demoGenerationLimiter.tryAcquire(email)) {
+            emitter.completeWithError(new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.TOO_MANY_REQUESTS, "Recruiter demo daily AI limit reached. Try the read-only demo."));
+            return emitter;
+        }
         StringBuilder fullText = new StringBuilder();
 
         String prompt = buildPrompt(student);
