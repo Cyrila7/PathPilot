@@ -1,6 +1,7 @@
 package com.pathpilot.pathpilot.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 class DegreeWorksParserTest {
@@ -46,6 +47,12 @@ class DegreeWorksParserTest {
         assertEquals("STILL_NEEDED", parser.getCourseStatus(audit, "CST 4800"));
         assertEquals("REQUIREMENT_OPTION", parser.getCourseStatus(audit, "MAT 2540"));
         assertEquals("REQUIREMENT_OPTION", parser.getCourseStatus(audit, "MAT 1475"));
+    }
+
+    @Test
+    void groupsAlternativeCoursesInSummary() {
+        String summary = parser.summarizeCourseStatuses(audit);
+        assertTrue(summary.contains("Choose 1 from: MAT 2540 OR MAT 1475"));
     }
 
     @Test
