@@ -64,20 +64,18 @@ PostgreSQL (Railway)     Anthropic Claude API
 ## Screenshots
 
 ### Landing page
-![Landing page](Screenshots/landingP.webp)
-
-### How it works
-![How it works](Screenshots/howitworks.webp)
+![PathPilot landing page](Screenshots/landing.png)
+![Landing page details](Screenshots/landing2.png)
 
 ### Student dashboard
-![Dashboard](Screenshots/dashboard.webp)
-![Dashboard details](Screenshots/dashboard2.webp)
+![Student dashboard](Screenshots/Student-Dashboard.png)
 
-### Generated assessment
-![AI plan](Screenshots/plan.webp)
-![Generated plan](Screenshots/generatedplan.png)
+### AI-generated assessment
+![AI-generated career assessment](Screenshots/AI-Generated-Assesment.png)
 
-> Some repository screenshots may show earlier UI iterations. The live application and read-only demo reflect the current recruiter-facing experience.
+### Public recruiter demo
+![Recruiter demo](Screenshots/Demo.png)
+![Recruiter demo assessment](Screenshots/Demo2.png)
 
 ## Run locally
 
