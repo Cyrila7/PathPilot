@@ -106,6 +106,27 @@ public class DegreeWorksParser {
                 result.append(code).append(": ").append(status).append("\n");
             }
         }
+        // Preserve the grouping of explicit alternatives for the AI prompt.
+        // Without this, two REQUIREMENT_OPTION statuses could look unrelated.
+        for (int i = 0; i < lines.length - 1; i++) {
+            if (!lines[i].trim().equalsIgnoreCase("Still needed:")) continue;
+            Matcher choice = CHOICE.matcher(lines[i + 1].trim());
+            if (!choice.matches()) continue;
+            String prefix = "";
+            List<String> options = new ArrayList<>();
+            for (String raw : choice.group(1).toUpperCase(Locale.ROOT).split("\\s+")) {
+                String word = raw.replaceAll("[,;]$", "");
+                if (word.matches("[A-Z]{2,5}") && !word.equals("OR") && !word.equals("AND")) {
+                    prefix = word;
+                } else if (word.matches("\\d{4}[A-Z]{0,2}") && !prefix.isEmpty()) {
+                    options.add(prefix + " " + word);
+                }
+            }
+            if (options.size() > 1) {
+                result.append("Choose ").append(choice.group(0).trim().split("\\s+")[0])
+                      .append(" from: ").append(String.join(" OR ", options)).append("\\n");
+            }
+        }
         result.append("Note: requirement options are alternatives; concentration tracks are not all required. ")
               .append("Recorded grades do not establish prerequisite eligibility.");
         return result.toString();
