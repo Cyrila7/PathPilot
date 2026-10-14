@@ -77,6 +77,7 @@ public class AiPlanController {
         java.util.concurrent.atomic.AtomicInteger inputTokens = new java.util.concurrent.atomic.AtomicInteger(-1);
         java.util.concurrent.atomic.AtomicInteger outputTokens = new java.util.concurrent.atomic.AtomicInteger(-1);
         ObjectMapper streamMapper = new ObjectMapper();
+        java.util.concurrent.atomic.AtomicBoolean streamFailed = new java.util.concurrent.atomic.AtomicBoolean(false);
         System.out.println("PathPilot AI request started; prompt characters=" + prompt.length());
 
         Map<String, Object> body = new HashMap<>();
@@ -93,8 +94,10 @@ public class AiPlanController {
                 .bodyValue(body)
                 .retrieve()
                 .bodyToFlux(String.class)
+                .timeout(java.time.Duration.ofSeconds(95))
                 .subscribe(
                     chunk -> {
+                        if (streamFailed.get()) return;
                         try {
                             // Anthropic SSE payloads carry token usage in message_start and message_delta.
                             // Ignore non-data frames; do not log the student's audit or generated text.
@@ -128,11 +131,18 @@ public class AiPlanController {
                                 }
                             }
                         } catch (Exception e) {
-                            emitter.completeWithError(e);
+                            streamFailed.set(true);
+                            System.err.println("PathPilot AI stream processing failed: " + e.getClass().getSimpleName());
+                            emitter.completeWithError(new IllegalStateException("AI response could not be processed. Please try again."));
                         }
                     },
-                    error -> emitter.completeWithError(error),
+                    error -> {
+                        streamFailed.set(true);
+                        System.err.println("PathPilot AI request failed: " + error.getClass().getSimpleName());
+                        emitter.completeWithError(new IllegalStateException("AI service unavailable or timed out. Please try again."));
+                    },
                     () -> {
+                        if (streamFailed.get()) return;
                         try {
                             String planText = fullText.toString();
                             System.out.println("PathPilot AI completed; duration ms=" + ((System.nanoTime() - generationStartedAt) / 1_000_000) + "; output characters=" + planText.length() + "; input tokens=" + inputTokens.get() + "; output tokens=" + outputTokens.get());
