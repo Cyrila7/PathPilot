@@ -22,6 +22,7 @@ function LandingPage() {
       <nav className="max-w-5xl mx-auto flex justify-between items-center py-6">
         <span className="text-xl font-extrabold tracking-tight">PathPilot</span>
         <div className="flex gap-3">
+          <button onClick={() => navigate("/demo")} className="text-sm text-blue-300 border border-blue-800 px-4 py-2 rounded-lg hover:text-white transition-colors">Explore demo</button>
           <button
             onClick={() => navigate("/login")}
             className="text-sm text-gray-400 border border-gray-700 px-4 py-2 rounded-lg hover:text-white hover:border-gray-500 transition-colors"
