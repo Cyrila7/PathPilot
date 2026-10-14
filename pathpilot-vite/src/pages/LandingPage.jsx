@@ -1,285 +1,73 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-function LandingPage() {
-  const navigate = useNavigate();
+const stages = [
+  { number: "01", title: "Academic audit", detail: "Student-provided DegreeWorks text and career goals" },
+  { number: "02", title: "Java parser", detail: "Spring Boot extracts course statuses and alternative requirements" },
+  { number: "03", title: "AI assessment", detail: "Claude generates recommendations; SSE streams the response" },
+  { number: "04", title: "Validated result", detail: "Completed assessments are checked before PostgreSQL persistence" },
+];
 
-  const fontStyle = {
-    fontFamily: "Georgia, 'Times New Roman', Times, serif",
-  };
-
-  const steps = [
-    { num: 1, title: "Your profile", desc: "School, year, and GPA" },
-    { num: 2, title: "Academic audit", desc: "Paste, upload, or enter manually" },
-    { num: 3, title: "Target role", desc: "SWE internship, company tier, timeline" },
-    { num: 4, title: "Skills check", desc: "What you can actually do right now" },
-    { num: 5, title: "Your score", desc: "Readiness score + honest action plan" },
-  ];
-
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-6" style={fontStyle}>
-
-      {/* Nav */}
-      <nav className="max-w-5xl mx-auto flex justify-between items-center py-6">
-        <span className="text-xl font-extrabold tracking-tight">PathPilot</span>
-        <div className="flex gap-3">
-          <button onClick={() => navigate("/demo")} className="text-sm text-blue-300 border border-blue-800 px-4 py-2 rounded-lg hover:text-white transition-colors">Explore demo</button>
-          <button
-            onClick={() => navigate("/login")}
-            className="text-sm text-gray-400 border border-gray-700 px-4 py-2 rounded-lg hover:text-white hover:border-gray-500 transition-colors"
-          >
-            Login
-          </button>
-          <button
-            onClick={() => navigate("/register")}
-            className="text-sm font-semibold bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg transition-colors"
-          >
-            Get started
-          </button>
+    <main className="min-h-screen bg-gray-950 text-white px-5">
+      <nav className="max-w-5xl mx-auto py-6 flex flex-wrap items-center justify-between gap-4">
+        <Link to="/" className="text-2xl font-extrabold tracking-tight">PathPilot</Link>
+        <div className="flex flex-wrap items-center gap-4 text-sm">
+          <a href="https://github.com/Cyrila7/PathPilot" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white">GitHub</a>
+          <Link to="/login" className="text-gray-300 hover:text-white">Login</Link>
+          <Link to="/register" className="text-blue-400 hover:text-blue-300">Get started</Link>
         </div>
       </nav>
 
-      {/* Hero */}
-      <div className="max-w-5xl mx-auto pt-20 pb-16 text-center">
-        <div className="inline-block bg-blue-950 text-blue-300 text-xs font-semibold px-4 py-1.5 rounded-full border border-blue-800 mb-8 tracking-wide">
-          Built for CS students targeting SWE internships
+      <section className="max-w-5xl mx-auto pt-20 pb-16">
+        <p className="inline-block rounded-full border border-blue-800 bg-blue-950 px-4 py-1.5 text-xs font-semibold tracking-wide text-blue-300 mb-7">Full-stack software engineering portfolio project</p>
+        <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight max-w-4xl mb-6">Academic planning meets <span className="text-blue-400">AI-powered career guidance.</span></h1>
+        <p className="text-gray-400 text-lg leading-relaxed max-w-2xl mb-8">
+          PathPilot is a React and Java Spring Boot application that interprets DegreeWorks-style academic audits
+          and generates course and internship preparation recommendations using Claude.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Link to="/demo" className="rounded-xl bg-blue-600 hover:bg-blue-500 px-7 py-3.5 font-semibold transition-colors">Explore read-only demo →</Link>
+          <a href="https://github.com/Cyrila7/PathPilot" target="_blank" rel="noopener noreferrer" className="rounded-xl border border-gray-700 hover:border-gray-500 px-7 py-3.5 font-semibold transition-colors">View source code</a>
         </div>
-        <h1 className="text-6xl md:text-7xl font-extrabold tracking-tight leading-tight mb-5">
-          Are you actually ready<br />
-          to get{" "}
-          <span className="text-blue-400">hired?</span>
-        </h1>
-        <p className="text-gray-400 text-lg leading-relaxed max-w-xl mx-auto mb-10">
-          PathPilot reads your academics, checks your skills, and gives you an
-          honest readiness score. No sugarcoating. No generic advice. Just what
-          you actually need to land the internship.
-        </p>
-        <div className="flex gap-3 justify-center flex-wrap">
-          <button
-            onClick={() => navigate("/register")}
-            className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl text-base transition-colors"
-          >
-            Check your score — it's free
-          </button>
-          <button
-            onClick={() => navigate("/login")}
-            className="text-gray-400 border border-gray-700 hover:text-white hover:border-gray-500 px-8 py-4 rounded-xl text-base transition-colors"
-          >
-            Already have an account
-          </button>
-        </div>
-      </div>
+      </section>
 
-      <hr className="max-w-5xl mx-auto border-gray-800" />
-
-      {/* How it works */}
-      <div className="max-w-5xl mx-auto py-16">
-        <p className="text-xs font-bold text-blue-500 uppercase tracking-widest text-center mb-3">
-          How it works
-        </p>
-        <h2 className="text-3xl font-extrabold tracking-tight text-center mb-2">
-          Five inputs. One honest score.
-        </h2>
-        <p className="text-gray-500 text-center text-sm mb-10">
-          Takes about 2 minutes. No career counselor required.
-        </p>
-        <div className="grid grid-cols-5 gap-3">
-          {steps.map((step) => (
-            <div
-              key={step.num}
-              className="bg-blue-950 border border-blue-900 rounded-xl p-4 text-center"
-            >
-              <div className="w-8 h-8 bg-blue-900 text-blue-300 rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-3">
-                {step.num}
-              </div>
-              <p className="text-sm font-bold text-white mb-1">{step.title}</p>
-              <p className="text-xs text-gray-500 leading-relaxed">{step.desc}</p>
+      <section className="max-w-5xl mx-auto border-t border-gray-800 py-14">
+        <p className="text-blue-400 uppercase text-xs font-bold tracking-widest mb-3">How it works</p>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-7">From degree audit to actionable guidance</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {stages.map(stage => (
+            <div key={stage.number} className="rounded-xl bg-gray-900 border border-gray-800 p-5">
+              <p className="font-mono text-blue-400 text-sm mb-4">{stage.number}</p>
+              <h3 className="font-bold mb-2">{stage.title}</h3>
+              <p className="text-sm text-gray-400 leading-relaxed">{stage.detail}</p>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      <hr className="max-w-5xl mx-auto border-gray-800" />
-
-      {/* Problem */}
-      <div className="max-w-5xl mx-auto py-16">
-        <p className="text-xs font-bold text-blue-500 uppercase tracking-widest text-center mb-3">
-          The problem
+      <section className="max-w-5xl mx-auto border-t border-gray-800 py-14">
+        <p className="text-blue-400 uppercase text-xs font-bold tracking-widest mb-3">Engineering overview</p>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-5">Built across the full stack</h2>
+        <p className="text-gray-400 max-w-3xl leading-relaxed mb-6">
+          React handles the student workflow and streaming UI. Spring Boot handles authentication, academic text parsing,
+          assessment validation, and integration with the Claude API. PostgreSQL stores completed assessments.
         </p>
-        <h2 className="text-3xl font-extrabold tracking-tight text-center mb-2">
-          Three parties. Zero alignment.
-        </h2>
-        <p className="text-gray-500 text-sm text-center max-w-lg mx-auto mb-10 leading-relaxed">
-          Schools want you to graduate. Employers want you to perform. You're
-          stuck in the middle with nobody translating between the two worlds.
-        </p>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
-              Schools optimize for
-            </p>
-            <p className="text-base font-bold mb-2">Graduation rates</p>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Credits, GPA, accreditation. Designed to get you a diploma — not
-              to get you employed. These are not the same thing.
-            </p>
-          </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
-              Employers optimize for
-            </p>
-            <p className="text-base font-bold mb-2">Proof you can perform</p>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Skills, portfolio, real experience. They hire people who can walk
-              in and contribute on day one.
-            </p>
-          </div>
-          <div className="bg-blue-950 border border-blue-800 rounded-2xl p-6">
-            <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-3">
-              PathPilot fixes this
-            </p>
-            <p className="text-base font-bold text-blue-400 mb-2">You get a map</p>
-            <p className="text-sm text-gray-500 leading-relaxed">
-              PathPilot connects your coursework to your career. Skill by skill.
-              Course by course. Deadline by deadline.
-            </p>
+        <div className="flex flex-wrap gap-2 mb-8">
+          {["React", "Vite", "Java 17", "Spring Boot", "PostgreSQL", "Claude API", "SSE", "JUnit"].map(tech => (
+            <span key={tech} className="rounded-lg border border-gray-700 bg-gray-900 px-3 py-1.5 text-sm text-gray-300">{tech}</span>
+          ))}
+        </div>
+        <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+          <h3 className="font-bold mb-2">Want to try the live application?</h3>
+          <p className="text-gray-400 text-sm mb-4">The read-only demo needs no account. A separate shared demo login is provided for exploring authenticated features.</p>
+          <div className="flex flex-wrap gap-4 items-center">
+            <Link to="/demo" className="text-blue-400 font-semibold hover:text-blue-300">Explore sample assessment →</Link>
+            <Link to="/login" className="text-gray-200 font-semibold hover:text-white">Open login →</Link>
           </div>
         </div>
-      </div>
-
-      <hr className="max-w-5xl mx-auto border-gray-800" />
-
-      {/* Status system */}
-      <div className="max-w-5xl mx-auto py-16">
-        <p className="text-xs font-bold text-blue-500 uppercase tracking-widest text-center mb-3">
-          Your status
-        </p>
-        <h2 className="text-3xl font-extrabold tracking-tight text-center mb-2">
-          Behind. On track. Ahead.
-        </h2>
-        <p className="text-gray-500 text-sm text-center max-w-lg mx-auto mb-10 leading-relaxed">
-          The three words every CS student needs to hear honestly — not to make
-          you feel good, but so you can actually do something about it.
-        </p>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-red-950 border border-red-900 rounded-2xl p-6">
-            <p className="text-base font-extrabold text-red-400 mb-3">Behind</p>
-            <p className="text-sm text-gray-500 leading-relaxed mb-4">
-              Missing critical skills or deadlines. A warning — not a judgment.
-              PathPilot tells you exactly how to fix it.
-            </p>
-            <div className="bg-red-900 bg-opacity-30 rounded-lg p-3 font-mono text-xs text-red-300 leading-relaxed">
-              ⚠ 8 months behind<br />
-              ✗ Missing: portfolio, internship<br />
-              → Prioritize these NOW
-            </div>
-          </div>
-          <div className="bg-blue-950 border border-blue-900 rounded-2xl p-6">
-            <p className="text-base font-extrabold text-blue-400 mb-3">On track</p>
-            <p className="text-sm text-gray-500 leading-relaxed mb-4">
-              You're doing what needs to be done. PathPilot flags what's coming
-              up so you don't fall behind without noticing.
-            </p>
-            <div className="bg-blue-900 bg-opacity-30 rounded-lg p-3 font-mono text-xs text-blue-300 leading-relaxed">
-              ✓ Skills baseline met<br />
-              ~ 2 gaps to close by Fall<br />
-              → Apply to internships now
-            </div>
-          </div>
-          <div className="bg-green-950 border border-green-900 rounded-2xl p-6">
-            <p className="text-base font-extrabold text-green-400 mb-3">Ahead</p>
-            <p className="text-sm text-gray-500 leading-relaxed mb-4">
-              You're exceeding what your career requires right now. PathPilot
-              pushes you toward higher-level opportunities you're ready for early.
-            </p>
-            <div className="bg-green-900 bg-opacity-30 rounded-lg p-3 font-mono text-xs text-green-300 leading-relaxed">
-              ✓ All core skills covered<br />
-              ✓ Portfolio strong<br />
-              → Target these companies now
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <hr className="max-w-5xl mx-auto border-gray-800" />
-
-      {/* No sugarcoating */}
-      <div className="max-w-5xl mx-auto py-16">
-        <p className="text-xs font-bold text-blue-500 uppercase tracking-widest text-center mb-3">
-          No sugarcoating. Ever.
-        </p>
-        <h2 className="text-3xl font-extrabold tracking-tight text-center mb-2">
-          Other AI vs PathPilot.
-        </h2>
-        <p className="text-gray-500 text-sm text-center max-w-lg mx-auto mb-10">
-          Every other tool optimizes for how you feel leaving. PathPilot
-          optimizes for where you actually end up.
-        </p>
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
-          <div className="grid grid-cols-2 divide-x divide-gray-800">
-            <div className="p-6">
-              <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">
-                What other AI says
-              </p>
-              {[
-                `"You're doing great! Keep it up!"`,
-                `"Here are some general tips for your journey."`,
-                `"Consider internships when you feel ready."`,
-                `"Your GPA shows dedication — employers love that!"`,
-              ].map((line, i) => (
-                <p key={i} className="text-sm text-gray-500 py-3 border-b border-gray-800 leading-relaxed last:border-0">
-                  {line}
-                </p>
-              ))}
-            </div>
-            <div className="p-6">
-              <p className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-4">
-                What PathPilot says
-              </p>
-              {[
-                `"You are 6 months behind. Here are the 3 specific things causing it."`,
-                `"You need these 3 skills. In this order. Starting this week."`,
-                `"Applications close in 47 days. You are not ready yet. Here's the sprint."`,
-                `"Your GPA is not what's holding you back. Your missing portfolio is."`,
-              ].map((line, i) => (
-                <p key={i} className="text-sm text-white py-3 border-b border-gray-800 leading-relaxed last:border-0">
-                  {line}
-                </p>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="max-w-5xl mx-auto pb-20">
-        <div className="bg-blue-950 border border-blue-900 rounded-3xl p-16 text-center">
-          <h2 className="text-4xl font-extrabold tracking-tight mb-4">
-            Find out where you<br />actually stand. Free.
-          </h2>
-          <p className="text-gray-400 text-base leading-relaxed mb-10">
-            Takes 2 minutes. No credit card.<br />
-            Get your real SWE internship readiness score today.
-          </p>
-          <button
-            onClick={() => navigate("/register")}
-            className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-10 py-4 rounded-xl text-base transition-colors"
-          >
-            Check your score — it's free
-          </button>
-          <p className="text-gray-600 text-sm mt-5">
-            Already have an account?{" "}
-            <span
-              onClick={() => navigate("/login")}
-              className="text-blue-400 cursor-pointer hover:underline"
-            >
-              Login
-            </span>
-          </p>
-        </div>
-      </div>
-
-    </div>
+      </section>
+      <footer className="max-w-5xl mx-auto border-t border-gray-800 py-7 text-gray-500 text-sm">PathPilot · Software engineering portfolio project · <a href="https://github.com/Cyrila7/PathPilot" className="hover:text-white" target="_blank" rel="noopener noreferrer">Source on GitHub</a></footer>
+    </main>
   );
 }
-
-export default LandingPage;
